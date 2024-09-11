@@ -2,21 +2,52 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-using namespace std; 
+using namespace std;
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-    glViewport(0, 0, width, height);
-}
-
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 
-int main()
-{
-    if (!glfwInit())
-    {
+// 데코레이터 함수 선언
+template <typename Func, typename... Args>
+auto loggingDecorator(Func func, const std::string& funcName, Args... args) {
+    cout << "Calling function: " << funcName << endl;
+    auto result = func(args...);
+    if (!result) {
+        cout << "Error in function: " << funcName << endl;
+    } else {
+        cout << "Success: " << funcName << endl;
+    }
+    return result;
+}
+
+GLFWwindow* initGLFW();
+bool initGLAD();
+void mainLoop(GLFWwindow* window);
+void clearScreen();
+
+// 전역 상수
+const unsigned int SCR_WIDTH = 800;
+const unsigned int SCR_HEIGHT = 600;
+
+int main() {
+    // GLFW 초기화
+    auto window = loggingDecorator(initGLFW, "initGLFW");
+    if (window == NULL) return -1;
+
+    // GLAD 초기화
+    if (!loggingDecorator(initGLAD, "initGLAD")) return -1;
+
+    // 메인 루프
+    mainLoop(window);
+
+    glfwTerminate();
+    return 0;
+}
+
+GLFWwindow* initGLFW() {
+    if (!glfwInit()) {
         cout << "Failed to initialize GLFW" << endl;
-        return -1;
+        return nullptr;
     }
 
     glfwWindowHint(GLFW_SAMPLES, 4);
@@ -24,42 +55,47 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window;
-    window = glfwCreateWindow(800, 600, "ZMMR", NULL, NULL);
-    if (window == NULL)
-    {
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "ZMMR", NULL, NULL);
+    if (window == NULL) {
         cout << "Failed to open GLFW window" << endl;
-        return -1;
+        return nullptr;
     }
     glfwMakeContextCurrent(window);
-
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        cout << "Failed to initialize GLAD" << endl;
-        return -1;
-    }
-
-    glViewport(0, 0, 800, 600);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-    while(!glfwWindowShouldClose(window))
-    {
-        processInput(window);
-
-
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        glfwSwapBuffers(window);
-        glfwPollEvents();    
-    }
-
-    glfwTerminate();
-    return 0;
+    return window;
 }
 
+bool initGLAD() {
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+        cout << "Failed to initialize GLAD" << endl;
+        return false;
+    }
+    glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+    return true;
+}
+
+void mainLoop(GLFWwindow* window) {
+    while (!glfwWindowShouldClose(window)) {
+        processInput(window);
+
+        clearScreen();
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+}
+
+void clearScreen() {
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+}
 
 void processInput(GLFWwindow *window) {
-    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+    glViewport(0, 0, width, height);
 }
