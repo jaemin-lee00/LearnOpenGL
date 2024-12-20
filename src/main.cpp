@@ -5,9 +5,12 @@
 #include <cmath>
 
 //Doucment adress
-// now number : 8
-// https://heinleinsgame.tistory.com/   -number-
-// sample docu
+//
+//  Last file update date : 2024-12-20
+//
+//  now number : 9
+//  https://heinleinsgame.tistory.com/   -number-
+//  sample docu
 /*
 https://learnopengl.com/code_viewer_gh.php?code=src/1.getting_started/3.1.shaders_uniform/shaders_uniform.cpp
 https://learnopengl.com/code_viewer_gh.php?code=src/1.getting_started/3.2.shaders_interpolation/shaders_interpolation.cpp
