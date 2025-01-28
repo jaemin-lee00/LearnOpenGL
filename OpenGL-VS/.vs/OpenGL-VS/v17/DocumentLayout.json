@@ -1,0 +1,37 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\JAEMIN LEE\\OneDrive - \uACC4\uBA85\uB300\uD559\uAD50\\\uBB38\uC11C\\GitHub\\LearnOpenGL\\OpenGL-VS\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{9921A3E5-A87F-4C1A-880C-AF93886F5F62}|OpenGL-VS\\OpenGL-VS.vcxproj|C:\\Users\\JAEMIN LEE\\OneDrive - \uACC4\uBA85\uB300\uD559\uAD50\\\uBB38\uC11C\\GitHub\\LearnOpenGL\\OpenGL-VS\\OpenGL-VS\\src\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{9921A3E5-A87F-4C1A-880C-AF93886F5F62}|OpenGL-VS\\OpenGL-VS.vcxproj|solutionrelative:OpenGL-VS\\src\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "main.cpp",
+              "DocumentMoniker": "C:\\Users\\JAEMIN LEE\\OneDrive - \uACC4\uBA85\uB300\uD559\uAD50\\\uBB38\uC11C\\GitHub\\LearnOpenGL\\OpenGL-VS\\OpenGL-VS\\src\\main.cpp",
+              "RelativeDocumentMoniker": "OpenGL-VS\\src\\main.cpp",
+              "ToolTip": "C:\\Users\\JAEMIN LEE\\OneDrive - \uACC4\uBA85\uB300\uD559\uAD50\\\uBB38\uC11C\\GitHub\\LearnOpenGL\\OpenGL-VS\\OpenGL-VS\\src\\main.cpp",
+              "RelativeToolTip": "OpenGL-VS\\src\\main.cpp",
+              "ViewState": "AgIAAGkBAAAAAAAAAAAmwHoBAABUAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-01-27T14:46:27.047Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
