@@ -51,10 +51,11 @@ const char *fragmentShaderSource = R"(
     in vec3 ourColor;
     in vec2 TexCoord;
 
-    uniform sampler2D ourTexture;
+    uniform sampler2D texture1;
+    uniform sampler2D texture2;
   
     void main() {
-        FragColor = texture(ourTexture, TexCoord) * vec4(ourColor, 1.0);
+        FragColor = mix(texture(texture1, TexCoord), texture(texture2, TexCoord), 0.2);
     }
 )";
 
@@ -259,9 +260,13 @@ bool linkShaderProgram(unsigned int vertexShader, unsigned int fragmentShader) {
 
 bool setupTextureData() {
 
-    unsigned int texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
+    unsigned int texture1, texture2;
+
+    glGenTextures(1, &texture1);
+    glGenTextures(2, &texture2);
+
+	glActiveTexture(GL_TEXTURE0); // activate the texture unit first before binding texture
+    glBindTexture(GL_TEXTURE_2D, texture1);
 
 	// set the texture wrapping parameters//
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -272,20 +277,44 @@ bool setupTextureData() {
 
 	// load and generate the texture
 	int width, height, nrChannels;
-	unsigned char* data = stbi_load("img/container.jpg", &width, &height, &nrChannels, 0);
+	unsigned char* data_container = stbi_load("img/container.jpg", &width, &height, &nrChannels, 0);
 
-    if (data) {
+    if (data_container) {
 		cout << "[LOG] > msg : Texture loaded successfully" << endl;
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data_container);
         glGenerateMipmap(GL_TEXTURE_2D);
 	}
     else {
         cout << "[Err : Texture] > msg : Failed to load texture" << endl;
         return false;
     }
+    stbi_image_free(data_container);
 
-	stbi_image_free(data);
+
+    glActiveTexture(GL_TEXTURE1); // activate the texture unit second before binding texture
+    glBindTexture(GL_TEXTURE_2D, texture2);
+
+    // set the texture wrapping parameters//
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // load and generate the texture
+    unsigned char* data_awesomeface = stbi_load("img/awesomeface.png", &width, &height, &nrChannels, 0);
+    if (data_awesomeface) {
+        cout << "[LOG] > msg : Texture loaded successfully" << endl;
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data_awesomeface);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else {
+        cout << "[Err : Texture] > msg : Failed to load texture" << endl;
+        return false;
+    }
+    stbi_image_free(data_awesomeface);
 
     return true;
 }
