@@ -1,8 +1,0 @@
-﻿  main.cpp
-C:\OpenGL\includes\GLFW\glfw3.h(3173,1): warning C4819: 현재 코드 페이지(949)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
-  (소스 파일 'src/main.cpp'을(를) 컴파일하는 중)
-  
-C:\Users\JAEMIN LEE\OneDrive - 계명대학교\문서\GitHub\LearnOpenGL\OpenGL-VS\OpenGL-VS\src\main.cpp(343,43): warning C4305: '인수': 'int'에서 'GLboolean'(으)로 잘립니다.
-C:\Users\JAEMIN LEE\OneDrive - 계명대학교\문서\GitHub\LearnOpenGL\OpenGL-VS\OpenGL-VS\src\main.cpp(343,43): warning C4309: '인수': 상수 값이 잘립니다.
-C:\Users\JAEMIN LEE\OneDrive - 계명대학교\문서\GitHub\LearnOpenGL\OpenGL-VS\OpenGL-VS\src\main.cpp(377,25): warning C4244: '초기화 중': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  OpenGL-VS.vcxproj -> C:\Users\JAEMIN LEE\OneDrive - 계명대학교\문서\GitHub\LearnOpenGL\OpenGL-VS\x64\Debug\OpenGL-VS.exe
