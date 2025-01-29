@@ -6,7 +6,11 @@
 *.userosscache
 *.sln.docstates
 
-.x64/
+# 빌드 디렉토리
+Debug/
+Release/
+x64/
+x86/
 
 # 빌드 출력 폴더
 [Bb]in/
@@ -40,3 +44,4 @@ build/
 *.sdf
 *.VC.db
 *.VC.VC.opendb
+     
