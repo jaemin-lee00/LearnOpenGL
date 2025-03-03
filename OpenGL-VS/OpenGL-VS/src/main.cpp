@@ -58,6 +58,17 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
     }
     const char* vShaderCode = vertexCode.c_str();
     const char* fShaderCode = fragmentCode.c_str();
+
+	// 2. compile shaders
+	unsigned int vertex, fragment;
+	int success;
+	char infoLog[512];
+
+	// vertex shader
+	vertex = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertex, 1, &vShaderCode, NULL);
+	glCompileShader(vertex);
+
 }
 
 #endif
@@ -73,7 +84,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
 
 //Doucment adress
 //
-//  Last file update date : 2025-03-02 21:00
+//  Last file update date : 2025-03-03 20:00
 //
 //  now number : 9
 //  https://heinleinsgame.tistory.com/   -number-
@@ -329,8 +340,8 @@ bool setupTextureData() {
     glGenTextures(1, &texture1);
     glGenTextures(1, &texture2);
 
-    glActiveTexture(GL_TEXTURE0); // activate the texture unit first before binding texture
-    glBindTexture(GL_TEXTURE_2D, texture1);
+    glActiveTexture(GL_TEXTURE0); // activate the texture unit first  before binding texture
+	glBindTexture(GL_TEXTURE_2D, texture1);
 
     // set the texture wrapping parameters//
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -344,7 +355,7 @@ bool setupTextureData() {
     unsigned char* data_container = stbi_load("img/container.jpg", &width, &height, &nrChannels, 0);
 
     if (data_container) {
-        cout << "[LOG] > msg : Texture loaded successfully" << endl;
+        cout << "[LOG] > msg : Texture container loaded successfully" << endl;
 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data_container);
         glGenerateMipmap(GL_TEXTURE_2D);
@@ -369,7 +380,7 @@ bool setupTextureData() {
     // load and generate the texture
     unsigned char* data_awesomeface = stbi_load("img/awesomeface.png", &width, &height, &nrChannels, 0);
     if (data_awesomeface) {
-        cout << "[LOG] > msg : Texture loaded successfully" << endl;
+        cout << "[LOG] > msg : Texture awesomeface loaded successfully" << endl;
 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data_awesomeface);
         glGenerateMipmap(GL_TEXTURE_2D);
