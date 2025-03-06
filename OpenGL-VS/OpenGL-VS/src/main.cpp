@@ -1,169 +1,14 @@
-#ifndef SHADER_H
-#define SHADER_H
-
 #include <glad/glad.h> // include glad to get all the required OpenGL headers
+#include <GLFW/glfw3.h>
 
-#include <string>
-#include <fstream>
-#include <sstream>
 #include <iostream>
 
-class Shader
-{
-public:
-    // the program ID
-    unsigned int ID;
-
-
-    // constructor raeds and builds the shader
-    Shader(const char* vertexPath, const char* fragmentPath);
-    // use/activate the shader
-    void use();
-    // utility uniform functions
-    void setBool(const std::string& name, bool value) const;
-    void setInt(const std::string& name, int value) const;
-    void setFloat(const std::string& name, float value) const;
-
-private:
-	// utility function for checking shader compilation/linking errors.
-	// ------------------------------------------------------------------------
-    void checkCompileErrors(unsigned int shader, std::string type);
-};
-
-Shader::Shader(const char* vertexPath, const char* fragmentPath)
-{
-    // 1. retrieve the vertex/fragment source code from filePath
-    std::string vertexCode;
-    std::string fragmentCode;
-    std::ifstream vShaderFile;
-    std::ifstream fShaderFile;
-    // ensure ifstream objects can throw exceptions:
-    vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-    fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-    try
-    {
-        // open files
-        vShaderFile.open(vertexPath);
-        fShaderFile.open(fragmentPath);
-        std::stringstream vShaderStream, fShaderStream;
-        // read file's buffer contents into streams
-        vShaderStream << vShaderFile.rdbuf();
-        fShaderStream << fShaderFile.rdbuf();
-        // close file handlers
-        vShaderFile.close();
-        fShaderFile.close();
-        // convert stream into string
-        vertexCode = vShaderStream.str();
-        fragmentCode = fShaderStream.str();
-    }
-    catch (std::ifstream::failure e)
-    {
-        std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
-    }
-    const char* vShaderCode = vertexCode.c_str();
-    const char* fShaderCode = fragmentCode.c_str();
-
-	// 2. compile shaders
-	unsigned int vertex, fragment;
-	int success;
-	char infoLog[512];
-
-	// vertex shader
-	vertex = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertex, 1, &vShaderCode, NULL);
-	glCompileShader(vertex);
-	// print compile errors if any
-	glGetShaderiv(vertex, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(vertex, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-	}
-
-	// similiar for fragment shader
-	fragment = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragment, 1, &fShaderCode, NULL);
-	glCompileShader(fragment);
-	// print compile errors if any
-	glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(fragment, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-	}
-
-
-	// shader Program
-	ID = glCreateProgram();
-	glAttachShader(ID, vertex);
-	glAttachShader(ID, fragment);
-	glLinkProgram(ID);
-	// print linking errors if any
-	glGetProgramiv(ID, GL_LINK_STATUS, &success);
-	if (!success)
-	{
-		glGetProgramInfoLog(ID, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-	}
-
-	// delete the shaders as they're linked into our program now and no longer necessary
-    glDeleteShader(vertex);
-    glDeleteShader(fragment);
-}
-
-void Shader::use()
-{
-	glUseProgram(ID);
-}
-
-void Shader::setBool(const std::string& name, bool value) const
-{
-    glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
-}
-
-void Shader::setInt(const std::string& name, int value) const
-{
-	glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
-}
-
-void Shader::setFloat(const std::string& name, float value) const
-{
-	glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
-}
-
-void Shader::checkCompileErrors(unsigned int shader, std::string type)
-{
-	int success;
-	char infoLog[1024];
-	if (type != "PROGRAM")
-	{
-		glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-		if (!success)
-		{
-			glGetShaderInfoLog(shader, 1024, NULL, infoLog);
-			std::cout << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
-		}
-	}
-	else
-	{
-		glGetProgramiv(shader, GL_LINK_STATUS, &success);
-		if (!success)
-		{
-			glGetProgramInfoLog(shader, 1024, NULL, infoLog);
-			std::cout << "ERROR::PROGRAM_LINKING_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
-		}
-	}
-}
-#endif
-
-
-#include <GLFW/glfw3.h>
 #include <functional>
 #include <cmath>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "include/stb_image.h"
-
+#include "shaders/shader_s.h"
 
 //Doucment adress
 //
@@ -185,39 +30,9 @@ using namespace std;
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-// Shader source code
-const char* vertexShaderSource = R"(
-    #version 330 core
-    layout (location = 0) in vec3 aPos;      // position variable has attribute position 0
-    layout (location = 1) in vec3 aColor;    // color variable has attribute position 1
-    layout (location = 2) in vec2 aTexCoord; // texture variable has attribute position 2
-
-    out vec3 ourColor;                      // output a color to the fragment shader
-    out vec2 TexCoord;                      // output a texture coordinate to the fragment shader
-
-    void main(){
-        gl_Position =  vec4(aPos, 1.0);       // Directly give vec3 to vec4 creator
-        ourColor = aColor;                  // Set our color to the input color we got from the vertex data
-        TexCoord = aTexCoord;               // Set our texture coordinates to the input texture coordinates we got from the vertex data
-    }
-)";
-
-const char* fragmentShaderSource = R"(
-    #version 330 core
-    out vec4 FragColor;
-
-
-    in vec3 ourColor;
-    in vec2 TexCoord;
-
-    uniform sampler2D texture1;
-    uniform sampler2D texture2;
-  
-    void main() {
-        FragColor = mix(texture(texture1, TexCoord), texture(texture2, TexCoord), 0.2);
-    }
-)";
-
+// Shader Source File Directories
+const char* vertexShaderPath = "src/shaders/vertexShader.vs";
+const char* fragmentShaderPath = "src/shaders/fragmentShader.fs";
 
 // Function declarations
 bool init();
@@ -243,13 +58,11 @@ auto loggingDecorator(Func func, const std::string& funcName, Args... args) {
 
 // Global variables for OpenGL objects
 GLFWwindow* window = nullptr;
-unsigned int shaderProgram = 0;
+Shader* ourShader = nullptr;
 unsigned int VAO = 0;
 
 // Function declarations for shader compilation and setup
-bool compileVertexShader(unsigned int& vertexShader);
-bool compileFragmentShader(unsigned int& fragmentShader);
-bool linkShaderProgram(unsigned int vertexShader, unsigned int fragmentShader);
+bool setupShader();
 bool setupTextureData();
 bool setupVertexData();
 
@@ -310,26 +123,11 @@ bool init() {
 
 // Draw process
 bool draw() {
-    unsigned int vertexShader = 0, fragmentShader = 0;
 
-    // Compile Vertex Shader
-    if (!loggingDecorator(compileVertexShader, "compileVertexShader", ref(vertexShader))) {
-        return false;
-    }
-
-    // Compile Fragment Shader
-    if (!loggingDecorator(compileFragmentShader, "compileFragmentShader", ref(fragmentShader))) {
-        return false;
-    }
-
-    // Link Shader Program
-    if (!loggingDecorator(linkShaderProgram, "linkShaderProgram", vertexShader, fragmentShader)) {
-        return false;
-    }
-
-    // Delete shaders as they're linked into our program now and no longer necessary
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+	// Setup Shader
+	if (!loggingDecorator(setupShader, "setupShader")) {
+		return false;
+	}
 
     // Setup Vertex Data
     if (!loggingDecorator(setupVertexData, "setupVertexData")) {
@@ -344,78 +142,17 @@ bool draw() {
     return true;
 }
 
-// Shader Control
-bool compileVertexShader(unsigned int& vertexShader) {
-    int success;
-    char infoLog[512];
-
-    // Vertex Shader
-    vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    if (vertexShader == 0) {
+// Setup Shader
+bool setupShader() {
+    try {
+        // Create a shader using shader class
+        ourShader = new Shader(vertexShaderPath, fragmentShaderPath);
+        return true;
+    }
+    catch (std::exception& e) {
+        cout << "[Err : Shader] > msg : " << e.what() << endl;
         return false;
     }
-
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
-
-    // Check for compile errors
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        cout << "[Err : Vertex Shader] > msg :  Vertex Shader compilation error: " << infoLog << endl;
-        return false;
-    }
-
-    return true;
-}
-
-bool compileFragmentShader(unsigned int& fragmentShader) {
-    int success;
-    char infoLog[512];
-
-    // Fragment Shader
-    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    if (fragmentShader == 0) {
-        return false;
-    }
-
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
-
-    // Check for compile errors
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        cout << "[Err : Fragment Shader] > msg : Fragment Shader compilation error: " << infoLog << endl;
-        return false;
-    }
-
-    return true;
-}
-
-bool linkShaderProgram(unsigned int vertexShader, unsigned int fragmentShader) {
-    int success;
-    char infoLog[512];
-
-    // Shader Program
-    shaderProgram = glCreateProgram();
-    if (shaderProgram == 0) {
-        return false;
-    }
-
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-
-    // Check for linking errors
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        cout << "[Err : Shader] > msg : Shader Program linking error: " << infoLog << endl;
-        return false;
-    }
-
-    return true;
 }
 
 bool setupTextureData() {
@@ -475,6 +212,11 @@ bool setupTextureData() {
         return false;
     }
     stbi_image_free(data_awesomeface);
+
+    // set uniform value
+	ourShader->use();
+	ourShader->setInt("texture1", 0);
+	ourShader->setInt("texture2", 1);
 
     return true;
 }
@@ -561,12 +303,12 @@ void mainLoop() {
         glClear(GL_COLOR_BUFFER_BIT);
 
         // Draw our triangle
-        glUseProgram(shaderProgram);
+		ourShader->use();
 
+        // Animation logic based on time
         float timeValue = glfwGetTime();
         float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
-        int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourTexture");
-        glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+		ourShader->setFloat("mixValue", greenValue);
 
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -583,7 +325,11 @@ void mainLoop() {
 // Ending process
 void cleanup() {
     glDeleteVertexArrays(1, &VAO);
-    glDeleteProgram(shaderProgram);
+
+	if (ourShader) {
+		delete ourShader;
+		ourShader = nullptr;
+	}
 }
      
 // Running process 
