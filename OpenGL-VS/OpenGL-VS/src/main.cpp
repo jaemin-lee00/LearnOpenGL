@@ -313,19 +313,13 @@ void mainLoop() {
         // Animation logic based on time
         //float timeValue = glfwGetTime();
         //float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
-		
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture1);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, texture2);
 
         ourShader->setFloat("mixValue", mixValue);
 
         ourShader->use();
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        
-        //glBindVertexArray(0);
+        glBindVertexArray(0);
 
 
         // Swap buffers and poll IO events
