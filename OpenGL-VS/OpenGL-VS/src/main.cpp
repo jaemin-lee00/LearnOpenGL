@@ -12,10 +12,10 @@
 
 //Doucment adress
 //
-//  Last file update date : 2025-03-05 23:20
+//  Last file update date : 2025-03-07 22:50
 //
-//  now number : 9
-//  https://heinleinsgame.tistory.com/   -number-
+//  now number, theme : 10 , Transformations
+//  https://heinleinsgame.tistory.com/   -number- , -Theme-
 //  sample docu
 //
 //  Additonal information : Shader Study
@@ -29,6 +29,11 @@ using namespace std;
 // Screen constants
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
+
+// sotres how much we're seeing of either texture
+float mixValue = 0.2f;
+unsigned int texture1, texture2;
+
 
 // Shader Source File Directories
 const char* vertexShaderPath = "src/shaders/vertexShader.vs";
@@ -157,8 +162,6 @@ bool setupShader() {
 
 bool setupTextureData() {
 
-    unsigned int texture1, texture2;
-
     glGenTextures(1, &texture1);
     glGenTextures(1, &texture2);
 
@@ -174,6 +177,8 @@ bool setupTextureData() {
 
     // load and generate the texture
     int width, height, nrChannels;
+	stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
+
     unsigned char* data_container = stbi_load("img/container.jpg", &width, &height, &nrChannels, 0);
 
     if (data_container) {
@@ -217,6 +222,8 @@ bool setupTextureData() {
 	ourShader->use();
 	ourShader->setInt("texture1", 0);
 	ourShader->setInt("texture2", 1);
+
+	stbi_set_flip_vertically_on_load(false); // reset it to default
 
     return true;
 }
@@ -302,17 +309,23 @@ void mainLoop() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // Draw our triangle
-		ourShader->use();
 
         // Animation logic based on time
-        float timeValue = glfwGetTime();
-        float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
-		ourShader->setFloat("mixValue", greenValue);
+        //float timeValue = glfwGetTime();
+        //float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
+		
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture1);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, texture2);
 
+        ourShader->setFloat("mixValue", mixValue);
+
+        ourShader->use();
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        glBindVertexArray(0);
+        
+        //glBindVertexArray(0);
 
 
         // Swap buffers and poll IO events
@@ -336,6 +349,19 @@ void cleanup() {
 void processInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+    {
+        mixValue += 0.001f; // change this value accordingly (might be too slow or too fast based on system hardware)
+        if (mixValue >= 1.0f)
+            mixValue = 1.0f;
+    }
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+    {
+        mixValue -= 0.001f; // change this value accordingly (might be too slow or too fast based on system hardware)
+        if (mixValue <= 0.0f)
+            mixValue = 0.0f;
+    }
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
