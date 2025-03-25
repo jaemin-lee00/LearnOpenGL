@@ -1,3 +1,7 @@
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include <glad/glad.h> // include glad to get all the required OpenGL headers
 #include <GLFW/glfw3.h>
 
@@ -12,7 +16,7 @@
 
 //Doucment adress
 //
-//  Last file update date : 2025-03-25 01:10
+//  Last file update date : 2025-03-25 16:50
 //
 //  now number, <<theme>> : 10 , Transformations
 //  https://heinleinsgame.tistory.com/   -number- , -Theme-
@@ -34,10 +38,14 @@ const unsigned int SCR_HEIGHT = 600;
 float mixValue = 0.2f;
 unsigned int texture1, texture2;
 
+// Transformation matrix
+glm::mat4 trans = glm::mat4(1.0f);
+
 
 // Shader Source File Directories
 const char* vertexShaderPath = "src/shaders/vertexShader.vs";
 const char* fragmentShaderPath = "src/shaders/fragmentShader.fs";
+
 
 // Function declarations
 bool init();
@@ -70,6 +78,16 @@ unsigned int VAO = 0;
 bool setupShader();
 bool setupTextureData();
 bool setupVertexData();
+
+void setTransform() {
+
+    // Transformation
+    trans = glm::mat4(1.0f);
+    trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+    trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+
+    ourShader->setMat4("transform", trans);
+}
 
 int main() {
 
@@ -218,6 +236,7 @@ bool setupTextureData() {
     }
     stbi_image_free(data_awesomeface);
 
+
     // set uniform value
 	ourShader->use();
 	ourShader->setInt("texture1", 0);
@@ -315,6 +334,7 @@ void mainLoop() {
         //float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
 
         ourShader->setFloat("mixValue", mixValue);
+        setTransform();
 
         ourShader->use();
         glBindVertexArray(VAO);
