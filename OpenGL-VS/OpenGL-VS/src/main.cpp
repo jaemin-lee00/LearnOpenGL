@@ -16,14 +16,14 @@
 
 //Doucment adress
 //
-//  Last file update date : 2025-03-30 15:30
+//  Last file update date : 2025-03-30 23:55
 //
 //  <<theme>> : Coordinate Systems
 //  https://learnopengl.com/Getting-started/  -Theme-
 //  sample docu
-//
+//  read the document untill local space part
 //  Additonal information : Shader Study
-/*
+/*  
 *
 */
 
