@@ -6,10 +6,15 @@
     out vec3 ourColor;                      // output a color to the fragment shader
     out vec2 TexCoord;                      // output a texture coordinate to the fragment shader
 
-    uniform mat4 transform;                     // uniform variable for transform matrix
+    //uniform mat4 transform;                     // uniform variable for transform matrix
+    
+    uniform mat4 model;                        // uniform variable for model matrix
+    uniform mat4 view;                         // uniform variable for view matrix
+    uniform mat4 projection;                   // uniform variable for projection matrix
+
 
     void main(){
-        gl_Position =  transform * vec4(aPos, 1.0);       // Directly give vec3 to vec4 creator
+        gl_Position =  projection * view * model * vec4(aPos, 1.0);       // Directly give vec3 to vec4 creator
         ourColor = aColor;                  // Set our color to the input color we got from the vertex data
         TexCoord = vec2(aTexCoord.x, aTexCoord.y);               // Set our texture coordinates to the input texture coordinates we got from the vertex data
     }
