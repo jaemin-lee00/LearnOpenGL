@@ -14,7 +14,7 @@
 #include "include/stb_image.h"
 #include "shaders/shader_s.h"
 
-//Doucment adress
+// Document adress
 //
 //  Last file update date : 2025-04-01 21:00
 //
@@ -22,7 +22,7 @@
 //  https://learnopengl.com/Getting-started/  -Theme-
 //  sample docu
 //  read the document untill local space part
-//  Additonal information : Shader Study
+//  change SetTransform function to set the transformation matrix
 /*  
 *
 */
@@ -49,6 +49,7 @@ glm::mat4 view = glm::mat4(1.0f);
 glm::mat4 projection = glm::mat4(1.0f);
 
 // Cube positions
+// After chage this array to Get CubePositions function
 glm::vec3 cubePositions[10];
 
 // Shader Source File Directories
@@ -109,18 +110,16 @@ void setProjection() {
 	ourShader->setMat4("projection", projection);
 }
 
-void setTransform() {
+// Function to set the transformation matrix
+void setTransform(int cubeNum) {
 
     // Transformation
-    trans = glm::mat4(1.0f);
-    trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
-    trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, cubePositions[cubeNum]);
 
-    ourShader->setMat4("transform", trans);
-}
-
-// Function to set the cube vertices and indices
-void setCube() {
+	float angle = 20.0f * cubeNum; // Rotate each cube at a different
+    model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+    ourShader->setMat4("model", model);
 }
 
 
@@ -329,20 +328,16 @@ bool setupVertexData() {
     };
 
 	// Cube positions
-    glm::vec3 cubePositions[] = {
-
-        glm::vec3(0.0f,  0.0f,  0.0f),
-        glm::vec3(2.0f,  5.0f, -15.0f),
-        glm::vec3(-1.5f, -2.2f, -2.5f),
-        glm::vec3(-3.8f, -2.0f, -12.3f),
-        glm::vec3(2.4f, -0.4f, -3.5f),
-        glm::vec3(-1.7f,  3.0f, -7.5f),
-        glm::vec3(1.3f, -2.0f, -2.5f),
-        glm::vec3(1.5f,  2.0f, -2.5f),
-        glm::vec3(1.5f,  0.2f, -1.5f),
-        glm::vec3(-1.3f,  1.0f, -1.5f)
-
-    };
+    cubePositions[0] = glm::vec3(0.0f,  0.0f,  0.0f);
+    cubePositions[1] = glm::vec3(2.0f,  5.0f, -15.0f);
+    cubePositions[2] = glm::vec3(-1.5f, -2.2f, -2.5f);
+    cubePositions[3] = glm::vec3(-3.8f, -2.0f, -12.3f);
+    cubePositions[4] = glm::vec3(2.4f, -0.4f, -3.5f);
+    cubePositions[5] = glm::vec3(-1.7f,  3.0f, -7.5f);
+    cubePositions[6] = glm::vec3(1.3f, -2.0f, -2.5f);
+    cubePositions[7] = glm::vec3(1.5f,  2.0f, -2.5f);
+    cubePositions[8] = glm::vec3(1.5f,  0.2f, -1.5f);
+    cubePositions[9] = glm::vec3(-1.3f,  1.0f, -1.5f);
 
     unsigned int indices[] = {  // it start from 0!
         0, 1, 3,     // first triangle
@@ -426,15 +421,19 @@ void mainLoop() {
 
         ourShader->setFloat("mixValue", mixValue);
         
-		setModel();
 		setView();
 		setProjection();
 
-        //setTransform();
-
+		// Draw the cube
         ourShader->use();
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        for (unsigned int i = 0; i < 10; i++) {
+            setTransform(i); // Set the transformation for each cube
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
+
+
         glBindVertexArray(0);
 
 
