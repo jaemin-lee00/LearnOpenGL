@@ -16,13 +16,13 @@
 
 // Document adress
 //
-//  Last file update date : 2025-04-01 21:00
+//  Last file update date : 2025-07-17 23:50
 //
-//  <<theme>> : Coordinate Systems
+//  <<theme>> : Camera
 //  https://learnopengl.com/Getting-started/  -Theme-
-//  sample docu
-//  read the document untill local space part
-//  change SetTransform function to set the transformation matrix
+//  
+// https://learnopengl.com/code_viewer_gh.php?code=src/1.getting_started/7.1.camera_circle/camera_circle.cpp
+// shutup and read that code about carmera matirx and then think aobut how to use it in your code 
 /*  
 *
 */
@@ -37,6 +37,9 @@ const unsigned int SCR_HEIGHT = 600;
 // sotres how much we're seeing of either texture
 float mixValue = 0.2f;
 unsigned int texture1, texture2;
+
+
+// Camera settings
 
 // Transformation matrix
 glm::mat4 trans = glm::mat4(1.0f);
