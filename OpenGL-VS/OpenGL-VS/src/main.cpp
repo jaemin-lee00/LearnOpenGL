@@ -503,20 +503,68 @@ void processInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-    {
-        mixValue += 0.001f; // change this value accordingly (might be too slow or too fast based on system hardware)
-        if (mixValue >= 1.0f)
-            mixValue = 1.0f;
-    }
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-    {
-        mixValue -= 0.001f; // change this value accordingly (might be too slow or too fast based on system hardware)
-        if (mixValue <= 0.0f)
-            mixValue = 0.0f;
-    }
+    float cameraSpeed = static_cast<float>(deltaTime * 2.5f); // adjust accordingly
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        cameraPos += cameraSpeed * cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        cameraPos -= cameraSpeed * cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
+}
+
+// glfw : whenever the mouse moves, this function is called
+// -----------------------------------------------------------------------
+void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+
+
+    if (fristMouse) {
+        lastX = static_cast<float>(xpos);
+        lastY = static_cast<float>(ypos);
+        fristMouse = false;
+    }
+
+
+    float xoffset = static_cast<float>(xpos - lastX);
+    float yoffset = static_cast<float>(lastY - ypos); // reversed since y-coordinates go from bottom to top
+    lastX = static_cast<float>(xpos);
+    lastY = static_cast<float>(ypos);
+
+
+    float sensitivity = 0.1f; // adjust accordingly
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+
+
+    yaw += xoffset;
+    pitch += yoffset;
+
+
+    // Make sure that when pitch is out of bounds, screen doesn't get flipped
+    if (pitch > 89.0f)
+        pitch = 89.0f;
+    if (pitch < -89.0f)
+        pitch = -89.0f;
+
+    // Update camera front vector
+    glm::vec3 front;
+    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    front.y = sin(glm::radians(pitch));
+    front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    cameraFront = glm::normalize(front);
+}
+
+// glfw : whenever the mouse scroll wheel is used, this function is called
+// -----------------------------------------------------------------------
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+    fov -= static_cast<float>(yoffset);
+    if (fov < 1.0f)
+        fov = 1.0f;
+    if (fov > 45.0f)
+        fov = 45.0f;
 }
