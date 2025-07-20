@@ -34,24 +34,6 @@ using namespace std;
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-// camear settings
-glm::vec3 cameraPos     =    glm::vec3(0.0f, 0.0f, 3.0f); // Camera position
-glm::vec3 cameraFront   =    glm::vec3(0.0f, 0.0f, -1.0f); // Camera front vector
-glm::vec3 cameraUp      =    glm::vec3(0.0f, 1.0f, 0.0f); // Camera up vector
-
-bool fristMouse = true; // Flag to check if it's the first mouse input
-float yaw = -90.0f; // Yaw angle is initially set to -90 degrees 
-                    // since a yaw of 0 resulsts in a direction vector poijnting to the right so we initailly roatate a bit to the left
-
-float pitch = 0.0f; // Pitch angle is initially set to 0 degrees
-float lastX = SCR_WIDTH / 2.0f; // Last X position of the mouse
-float lastY = SCR_HEIGHT / 2.0f; // Last Y position of the mouse
-float fov   = 45.0f; // Field of view in degrees
-
-
-float deltaTime = 0.0f; // Time between current frame and last frame
-float lastFrame = 0.0f; // Time of last frame
-
 // sotres how much we're seeing of either texture
 float mixValue = 0.2f;
 unsigned int texture1, texture2;
@@ -85,15 +67,6 @@ void mainLoop();
 void cleanup();
 void processInput(GLFWwindow* window);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-
-void setModel();
-void setView();
-void setProjection();
-void setTransform(int cubeNum);
-
 
 // Decorator function for error handling
 template <typename Func, typename... Args>
@@ -136,7 +109,7 @@ void setView() {
 // Function to set the projection matrix
 void setProjection() {
 	// Set the projection matrix to a perspective projection
-	projection = glm::perspective(glm::radians(fov), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+	projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 	ourShader->setMat4("projection", projection);
 }
 
@@ -152,13 +125,6 @@ void setTransform(int cubeNum) {
     ourShader->setMat4("model", model);
 }
 
-void setCameraTransform() { 
-    // Set the camera transformation matrix
-    view = glm::mat4(1.0f);
-
-	view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp); // Up vector
-    ourShader->setMat4("view", view);
-}
 
 int main() {
 
@@ -206,8 +172,6 @@ bool init() {
 
     // Set callback functions
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	glfwSetCursorPosCallback(window, mouse_callback);
-	glfwSetScrollCallback(window, scroll_callback);
 
     // Initialize GLAD
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -423,8 +387,8 @@ bool setupVertexData() {
     //glEnableVertexAttribArray(1);
 
     // Texture attribute
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 
 
     // Unbind VBO and VAO
@@ -443,14 +407,6 @@ bool setupVertexData() {
 
 void mainLoop() {
     while (!glfwWindowShouldClose(window)) {
-        
-		// per-frame time logic
-		// -------------------------------------
-		float currentFrame = static_cast<float>(glfwGetTime());
-		deltaTime = currentFrame - lastFrame;   // calculate time difference between current frame and last frame
-		lastFrame = currentFrame;               // set last frame to current frame
-        
-        
         // Input
         processInput(window);
 
@@ -462,16 +418,19 @@ void mainLoop() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
+        // Animation logic based on time
+        //float timeValue = glfwGetTime();
+        //float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
+
+        ourShader->setFloat("mixValue", mixValue);
+        
+		setView();
+		setProjection();
 
 		// Draw the cube
         ourShader->use();
-
-        setProjection();
-        // camera /view transformation
-        setCameraTransform();
-
-		// render the container
         glBindVertexArray(VAO);
+
         for (unsigned int i = 0; i < 10; i++) {
             setTransform(i); // Set the transformation for each cube
             glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -503,68 +462,20 @@ void processInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-	float cameraSpeed = static_cast<float>(deltaTime * 2.5f); // adjust accordingly
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        cameraPos += cameraSpeed * cameraFront;
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        cameraPos -= cameraSpeed * cameraFront;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+    {
+        mixValue += 0.001f; // change this value accordingly (might be too slow or too fast based on system hardware)
+        if (mixValue >= 1.0f)
+            mixValue = 1.0f;
+    }
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+    {
+        mixValue -= 0.001f; // change this value accordingly (might be too slow or too fast based on system hardware)
+        if (mixValue <= 0.0f)
+            mixValue = 0.0f;
+    }
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
-}
-
-// glfw : whenever the mouse moves, this function is called
-// -----------------------------------------------------------------------
-void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
-
-
-    if (fristMouse) {
-        lastX = static_cast<float>(xpos);
-        lastY = static_cast<float>(ypos);
-        fristMouse = false;
-    }
-
-
-    float xoffset = static_cast<float>(xpos - lastX);
-    float yoffset = static_cast<float>(lastY - ypos); // reversed since y-coordinates go from bottom to top
-    lastX = static_cast<float>(xpos);
-    lastY = static_cast<float>(ypos);
-
-
-    float sensitivity = 0.1f; // adjust accordingly
-    xoffset *= sensitivity;
-    yoffset *= sensitivity;
-
-
-    yaw += xoffset;
-    pitch += yoffset;
-    
-    
-    // Make sure that when pitch is out of bounds, screen doesn't get flipped
-    if (pitch > 89.0f)
-        pitch = 89.0f;
-    if (pitch < -89.0f)
-        pitch = -89.0f;
-
-    // Update camera front vector
-    glm::vec3 front;
-    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-    front.y = sin(glm::radians(pitch));
-    front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-    cameraFront = glm::normalize(front);
-}
-
-// glfw : whenever the mouse scroll wheel is used, this function is called
-// -----------------------------------------------------------------------
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
-    fov -= static_cast<float>(yoffset);
-    if (fov < 1.0f)
-        fov = 1.0f;
-    if (fov > 45.0f)
-        fov = 45.0f;
 }
