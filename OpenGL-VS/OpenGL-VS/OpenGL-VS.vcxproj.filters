@@ -29,5 +29,8 @@
     <ClInclude Include="src\shaders\shader_s.h">
       <Filter>shaders</Filter>
     </ClInclude>
+    <ClInclude Include="src\camera.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
