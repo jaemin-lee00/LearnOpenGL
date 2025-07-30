@@ -24,6 +24,18 @@
     <None Include="src\shaders\fragmentShader.fs">
       <Filter>shaders</Filter>
     </None>
+    <None Include="src\shaders\colors.vs">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="src\shaders\colors.fs">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="src\shaders\light_cube.vs">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="src\shaders\light_cube.fs">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\shaders\shader_s.h">

@@ -45,11 +45,10 @@ float deltaTime = 0.0f; // Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
 
 // sotres how much we're seeing of either texture
-float mixValue = 0.2f;
 unsigned int texture1, texture2;
 
-
-// Camera settings
+// Light properties
+glm::vec3 lightPos(1.2f, 1.0f, 2.0f); // Position of the light source
 
 // Transformation matrix
 glm::mat4 trans = glm::mat4(1.0f);
@@ -69,6 +68,13 @@ glm::vec3 cubePositions[10];
 const char* vertexShaderPath = "src/shaders/vertexShader.vs";
 const char* fragmentShaderPath = "src/shaders/fragmentShader.fs";
 
+// LightingShader Source File Directories
+const char* lightVertexShaderPath = "src/shaders/basic_lighting.vs";
+const char* lightFragmentShaderPath = "src/shaders/basic_lighting.fs";
+
+// LightCubeShader Source File Directories
+const char* lightCubeVertexShaderPath = "src/shaders/light_cube.vs";
+const char* lightCubeFragmentShaderPath = "src/shaders/light_cube.fs";
 
 // Function declarations
 bool init();
@@ -105,10 +111,15 @@ auto loggingDecorator(Func func, const std::string& funcName, Args... args) {
 // Global variables for OpenGL objects
 GLFWwindow* window = nullptr;
 Shader* ourShader = nullptr;
+Shader* lightShader = nullptr;
+Shader* lightCubeShader = nullptr;
+
 unsigned int VAO = 0;
 
 // Function declarations for shader compilation and setup
 bool setupShader();
+bool setupLightShader();
+bool setupLightCubeShader();
 bool setupTextureData();
 bool setupVertexData();
 
@@ -213,9 +224,19 @@ bool init() {
 bool draw() {
 
 	// Setup Shader
-	if (!loggingDecorator(setupShader, "setupShader")) {
-		return false;
-	}
+	//if (!loggingDecorator(setupShader, "setupShader")) {
+	//	return false;
+	//}
+
+    // Setup LightShader
+    if (!loggingDecorator(setupLightShader, "setupLightShader")) {
+    	return false;
+    }
+
+    // Setup LightCubeShader
+    if (!loggingDecorator(setupLightCubeShader, "setupLightCubeShader")) {
+    	return false;
+    }
 
     // Setup Vertex Data
     if (!loggingDecorator(setupVertexData, "setupVertexData")) {
@@ -242,6 +263,33 @@ bool setupShader() {
         return false;
     }
 }
+
+// Setup Light Shader
+bool setupLightShader() {
+    try {
+        // Create a shader using shader class
+        lightShader = new Shader(lightVertexShaderPath, lightFragmentShaderPath);
+        return true;
+    }
+    catch (std::exception& e) {
+        cout << "[Err : Shader] > msg : " << e.what() << endl;
+        return false;
+    }
+}
+
+// Setup Light Cube Shader
+bool setupLightCubeShader() {
+    try {
+        // Create a shader using shader class
+        lightCubeShader = new Shader(lightCubeVertexShaderPath, lightCubeFragmentShaderPath);
+        return true;
+    }
+    catch (std::exception& e) {
+        cout << "[Err : Shader] > msg : " << e.what() << endl;
+        return false;
+    }
+}
+
 
 bool setupTextureData() {
 
