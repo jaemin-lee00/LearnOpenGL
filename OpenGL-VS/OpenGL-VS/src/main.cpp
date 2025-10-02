@@ -17,14 +17,22 @@
 
 // Document adress
 //
-//  Last file update date : 2025-07-30 00:00
+//  Last file update date : 2025-10-02 11:45
 //
 //  <<theme>> : Color
 //  https://learnopengl.com/Lighting/  -Theme-
 //  
 // Make Color Class
 /*  
-*
+*   In Color Class , we will learn about how to make color in OpenGL
+*   Step1 , Make shader for color                                               V    
+*   Step2 , Make Camera class for camera movement                               V
+* 
+*   Step3 , Make Color Shader                                                   V
+*   Step4 , Make Color Cube Shader                                              V
+*   Step5, Intergrate Color Classes with main.cpp
+*       STEP5.1 : Make Vertex Shader for Color Cube in setupVertexData          now
+* 
 */
 
 // Namespace for cleaner code
@@ -38,17 +46,17 @@ const unsigned int SCR_HEIGHT = 600;
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f)); // Initial camera position
 float lastX = SCR_WIDTH / 2.0f; // Last X position of the mouse
 float lastY = SCR_HEIGHT / 2.0f; // Last Y position of the mouse
-
-bool fristMouse = true; // Flag to check if it's the first mouse input
+bool firstMouse = true; // Flag to check if it's the first mouse input
 
 float deltaTime = 0.0f; // Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
 
+// Light properties
+glm::vec3 lightPos(1.2f, 1.0f, 2.0f); // Position of the light source
+
 // sotres how much we're seeing of either texture
 unsigned int texture1, texture2;
 
-// Light properties
-glm::vec3 lightPos(1.2f, 1.0f, 2.0f); // Position of the light source
 
 // Transformation matrix
 glm::mat4 trans = glm::mat4(1.0f);
@@ -224,14 +232,14 @@ bool init() {
 bool draw() {
 
 	// Setup Shader
-	//if (!loggingDecorator(setupShader, "setupShader")) {
-	//	return false;
-	//}
+	if (!loggingDecorator(setupShader, "setupShader")) {
+		return false;
+	}
 
     // Setup LightShader
-    if (!loggingDecorator(setupLightShader, "setupLightShader")) {
-    	return false;
-    }
+    //if (!loggingDecorator(setupLightShader, "setupLightShader")) {
+    //	return false;
+    //}
 
     // Setup LightCubeShader
     if (!loggingDecorator(setupLightCubeShader, "setupLightCubeShader")) {
@@ -244,9 +252,9 @@ bool draw() {
     }
 
     // Setup Texture Data
-    if (!loggingDecorator(setupTextureData, "setupTextureData")) {
-        return false;
-    }
+    //if (!loggingDecorator(setupTextureData, "setupTextureData")) {
+    //    return false;
+    //}
 
     return true;
 }
@@ -352,8 +360,8 @@ bool setupTextureData() {
 
     // set uniform value
 	ourShader->use();
-	ourShader->setInt("texture1", 0);
-	ourShader->setInt("texture2", 1);
+	ourShader->setVec3("objectColor", 1.0f, 0.5f, 0.31f);
+	ourShader->setVec3("lightColor",  1.0f, 1.0f, 1.0f);
 
 	stbi_set_flip_vertically_on_load(false); // reset it to default
 
@@ -363,60 +371,60 @@ bool setupTextureData() {
 bool setupVertexData() {
 	// Set up vertex data (and buffer(s)) and configure vertex attributes
     float vertices[] = {
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f, -0.5f,
+         0.5f,  0.5f, -0.5f,
+         0.5f,  0.5f, -0.5f,
+        -0.5f,  0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,
 
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,
+         0.5f, -0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
+        -0.5f, -0.5f,  0.5f,
 
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
 
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,
+         0.5f,  0.5f, -0.5f,
+         0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
 
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f,  0.5f,
+         0.5f, -0.5f,  0.5f,
+        -0.5f, -0.5f,  0.5f,
+        -0.5f, -0.5f, -0.5f,
 
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+        -0.5f,  0.5f, -0.5f,
+         0.5f,  0.5f, -0.5f,
+         0.5f,  0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f, -0.5f,
     };
 
 	// Cube positions
-    cubePositions[0] = glm::vec3(0.0f,  0.0f,  0.0f);
-    cubePositions[1] = glm::vec3(2.0f,  5.0f, -15.0f);
-    cubePositions[2] = glm::vec3(-1.5f, -2.2f, -2.5f);
-    cubePositions[3] = glm::vec3(-3.8f, -2.0f, -12.3f);
-    cubePositions[4] = glm::vec3(2.4f, -0.4f, -3.5f);
-    cubePositions[5] = glm::vec3(-1.7f,  3.0f, -7.5f);
-    cubePositions[6] = glm::vec3(1.3f, -2.0f, -2.5f);
-    cubePositions[7] = glm::vec3(1.5f,  2.0f, -2.5f);
-    cubePositions[8] = glm::vec3(1.5f,  0.2f, -1.5f);
-    cubePositions[9] = glm::vec3(-1.3f,  1.0f, -1.5f);
+    //cubePositions[0] = glm::vec3(0.0f,  0.0f,  0.0f);
+    //cubePositions[1] = glm::vec3(2.0f,  5.0f, -15.0f);
+    //cubePositions[2] = glm::vec3(-1.5f, -2.2f, -2.5f);
+    //cubePositions[3] = glm::vec3(-3.8f, -2.0f, -12.3f);
+    //cubePositions[4] = glm::vec3(2.4f, -0.4f, -3.5f);
+    //cubePositions[5] = glm::vec3(-1.7f,  3.0f, -7.5f);
+    //cubePositions[6] = glm::vec3(1.3f, -2.0f, -2.5f);
+    //cubePositions[7] = glm::vec3(1.5f,  2.0f, -2.5f);
+    //cubePositions[8] = glm::vec3(1.5f,  0.2f, -1.5f);
+    //cubePositions[9] = glm::vec3(-1.3f,  1.0f, -1.5f);
 
     unsigned int indices[] = {  // it start from 0!
         0, 1, 3,     // first triangle
@@ -439,32 +447,38 @@ bool setupVertexData() {
         return false;
     }
 
-    glGenBuffers(1, &EBO);
-    if (EBO == 0) {
-        cout << "[Err :EBO ] > msg :  EBO error" << endl;
-        return false;
-    }
-
-    glBindVertexArray(VAO);
+    //glGenBuffers(1, &EBO);
+    //if (EBO == 0) {
+    //    cout << "[Err :EBO ] > msg :  EBO error" << endl;
+    //    return false;
+    //}
 
 
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+    glBindVertexArray(VAO);
+
     //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     // Vertex attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
     //glVertexAttribPointer(1, 3, GL_FLOAT, GL_FLOAT, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     //glEnableVertexAttribArray(1);
 
+	unsigned int lightCubeVAO = 0;
+	glGenVertexArrays(1, &lightCubeVAO);
+	glBindVertexArray(lightCubeVAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
     // Texture attribute
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
 
 
     // Unbind VBO and VAO
@@ -562,10 +576,10 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 
 
-    if (fristMouse) {
+    if (firstMouse) {
         lastX = static_cast<float>(xpos);
         lastY = static_cast<float>(ypos);
-        fristMouse = false;
+        firstMouse = false;
     }
 
 
