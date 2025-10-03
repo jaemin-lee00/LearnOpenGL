@@ -277,7 +277,7 @@ bool setupShader() {
 bool setupLightShader() {
     try {
         // Create a shader using shader class
-        lightShader = new Shader(lightVertexShaderPath, lightFragmentShaderPath);
+        lightingShader = new Shader(lightVertexShaderPath, lightFragmentShaderPath);
         return true;
     }
     catch (std::exception& e) {
@@ -436,8 +436,8 @@ bool setupVertexData() {
     unsigned int VBO = 0;
     unsigned int EBO = 0;
 
-    glGenVertexArrays(1, &VAO);
-    if (VAO == 0) {
+    glGenVertexArrays(1, &cubeVAO);
+    if (cubeVAO == 0) {
         cout << "[Err : VAO ] > msg :  VAO error" << endl;
         return false;
     }
@@ -459,7 +459,7 @@ bool setupVertexData() {
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glBindVertexArray(VAO);
+    glBindVertexArray(cubeVAO);
 
     //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
@@ -471,13 +471,10 @@ bool setupVertexData() {
     //glVertexAttribPointer(1, 3, GL_FLOAT, GL_FLOAT, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     //glEnableVertexAttribArray(1);
 
-	unsigned int lightCubeVAO = 0;
 	glGenVertexArrays(1, &lightCubeVAO);
 	glBindVertexArray(lightCubeVAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-    // Texture attribute
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
@@ -545,11 +542,17 @@ void mainLoop() {
 
 // Ending process
 void cleanup() {
-    glDeleteVertexArrays(1, &VAO);
+    glDeleteVertexArrays(1, &cubeVAO);
+	glDeleteVertexArrays(1, &lightCubeVAO);
 
-	if (ourShader) {
+	if (lightCubeShader) {
 		delete ourShader;
 		ourShader = nullptr;
+	}
+
+    if(lightCubeShader){
+        delete lightCubeShader;
+        lightCubeShader = nullptr;
 	}
 }
      
