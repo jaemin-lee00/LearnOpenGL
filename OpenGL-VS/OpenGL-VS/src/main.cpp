@@ -301,7 +301,6 @@ bool setupLightCubeShader() {
     }
 }
 
-
 bool setupTextureData() {
 
     glGenTextures(1, &texture1);
