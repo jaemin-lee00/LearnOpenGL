@@ -19,20 +19,22 @@
 //
 //  Last file update date : 2025-10-02 11:45
 //
-//  <<theme>> : Color
+//  <<theme>> : Basic Lighting
 //  https://learnopengl.com/Lighting/  -Theme-
 //  
-// Make Color Class
+// Make Basice Lighting Class
 /*  
-*   In Color Class , we will learn about how to make color in OpenGL
-*   Step1 , Make shader for color                                               V    
-*   Step2 , Make Camera class for camera movement                               V
+*   Before moving on to the next chapter,
+*   let's understand the composition of the composite shader and
+*   use it to re-establish the function setting of the reference method
 * 
-*   Step3 , Make Color Shader                                                   V
-*   Step4 , Make Color Cube Shader                                              V
-*   Step5, Intergrate Color Classes with main.cpp
-*       STEP5.1 : Make Vertex Shader for Color Cube in setupVertexData          now
 * 
+* 
+*   Problems to be solved :-----------------------------------------------
+*   The SET function in the current function is dependent on ourShader.
+*   Combine Sider setup into one
+
+*   Turn this over to issue checking
 */
 
 // Namespace for cleaner code
@@ -86,8 +88,8 @@ const char* vertexShaderPath = "src/shaders/vertexShader.vs";
 const char* fragmentShaderPath = "src/shaders/fragmentShader.fs";
 
 // LightingShader Source File Directories
-const char* lightVertexShaderPath = "src/shaders/basic_lighting.vs";
-const char* lightFragmentShaderPath = "src/shaders/basic_lighting.fs";
+const char* lightVertexShaderPath = "src/shaders/colors.vs";
+const char* lightFragmentShaderPath = "src/shaders/colors.fs";
 
 // LightCubeShader Source File Directories
 const char* lightCubeVertexShaderPath = "src/shaders/light_cube.vs";
