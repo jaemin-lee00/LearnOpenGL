@@ -235,14 +235,14 @@ bool init() {
 bool draw() {
 
 	// Setup Shader
-	if (!loggingDecorator(setupShader, "setupShader")) {
-		return false;
-	}
+	//if (!loggingDecorator(setupShader, "setupShader")) {
+	//	return false;
+	//}
 
     // Setup LightShader
-    //if (!loggingDecorator(setupLightShader, "setupLightShader")) {
-    //	return false;
-    //}
+    if (!loggingDecorator(setupLightShader, "setupLightShader")) {
+    	return false;
+    }
 
     // Setup LightCubeShader
     if (!loggingDecorator(setupLightCubeShader, "setupLightCubeShader")) {
@@ -518,22 +518,38 @@ void mainLoop() {
 
 
 		// Draw the cube
-        ourShader->use();
+        lightingShader->use();
+        lightingShader->setVec3("objectColor", 1.0f, 0.5f, 0.31f);
+        lightingShader->setVec3("lightColor", 1.0f, 1.0f, 1.0f);
 
-        setProjection();
-        // camera /view transformation
-        setCameraTransform();
 
-		// render the container
-        glBindVertexArray(VAO);
-        for (unsigned int i = 0; i < 10; i++) {
-            setTransform(i); // Set the transformation for each cube
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
+        // View/projection transformations
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        glm::mat4 view = camera.GetViewMatrix();
+        lightingShader->setMat4("projection", projection);
+        lightingShader->setMat4("view", view);
 
+        // World transformation
+        glm::mat4 model = glm::mat4(1.0f);
+        lightingShader->setMat4("model", model);
+
+        // Render the cube
+        glBindVertexArray(cubeVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        // Render the light cube
+        lightCubeShader->use();
+        lightCubeShader->setMat4("projection", projection);
+        lightCubeShader->setMat4("view", view);
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, lightPos);
+        model = glm::scale(model, glm::vec3(0.2f)); // a smaller cube
+        lightCubeShader->setMat4("model", model);
+
+        glBindVertexArray(lightCubeVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
 
         glBindVertexArray(0);
-
 
         // Swap buffers and poll IO events
         glfwSwapBuffers(window);
