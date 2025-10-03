@@ -57,6 +57,15 @@ glm::vec3 lightPos(1.2f, 1.0f, 2.0f); // Position of the light source
 // sotres how much we're seeing of either texture
 unsigned int texture1, texture2;
 
+// Global variables for OpenGL objects
+GLFWwindow* window = nullptr;
+Shader* ourShader = nullptr;
+Shader* lightingShader = nullptr;
+Shader* lightCubeShader = nullptr;
+
+unsigned int cubeVAO = 0;
+unsigned int lightCubeVAO = 0;
+
 
 // Transformation matrix
 glm::mat4 trans = glm::mat4(1.0f);
@@ -102,6 +111,13 @@ void setProjection();
 void setTransform(int cubeNum);
 
 
+// Function declarations for shader compilation and setup
+bool setupShader();
+bool setupLightShader();
+bool setupLightCubeShader();
+bool setupTextureData();
+bool setupVertexData();
+
 // Decorator function for error handling
 template <typename Func, typename... Args>
 auto loggingDecorator(Func func, const std::string& funcName, Args... args) {
@@ -115,21 +131,6 @@ auto loggingDecorator(Func func, const std::string& funcName, Args... args) {
     }
     return result;
 }
-
-// Global variables for OpenGL objects
-GLFWwindow* window = nullptr;
-Shader* ourShader = nullptr;
-Shader* lightShader = nullptr;
-Shader* lightCubeShader = nullptr;
-
-unsigned int VAO = 0;
-
-// Function declarations for shader compilation and setup
-bool setupShader();
-bool setupLightShader();
-bool setupLightCubeShader();
-bool setupTextureData();
-bool setupVertexData();
 
 // Function to set the model matrix
 void setModel() {
