@@ -24,6 +24,8 @@
 //  
 // Make Basice Lighting Class
 /*  
+*   UnderStand Using Decorator Pattern - 10/04
+* 
 *   Before moving on to the next chapter,
 *   let's understand the composition of the composite shader and
 *   use it to re-establish the function setting of the reference method
@@ -33,7 +35,10 @@
 *   Problems to be solved :-----------------------------------------------
 *   The SET function in the current function is dependent on ourShader.
 *   Combine Sider setup into one
-
+* 
+*   File segmentation of integrated documents for purpose
+* 
+* 
 *   Turn this over to issue checking
 */
 
@@ -68,10 +73,6 @@ Shader* lightCubeShader = nullptr;
 unsigned int cubeVAO = 0;
 unsigned int lightCubeVAO = 0;
 
-
-// Transformation matrix
-glm::mat4 trans = glm::mat4(1.0f);
-
 // Model matrix
 glm::mat4 model = glm::mat4(1.0f);
 // view matrix
@@ -79,14 +80,10 @@ glm::mat4 view = glm::mat4(1.0f);
 // projection matrix
 glm::mat4 projection = glm::mat4(1.0f);
 
-// Cube positions
-// After chage this array to Get CubePositions function
-glm::vec3 cubePositions[10];
-
 // Shader Source File Directories
 const char* vertexShaderPath = "src/shaders/vertexShader.vs";
 const char* fragmentShaderPath = "src/shaders/fragmentShader.fs";
-
+    
 // LightingShader Source File Directories
 const char* lightVertexShaderPath = "src/shaders/colors.vs";
 const char* lightFragmentShaderPath = "src/shaders/colors.fs";
@@ -110,11 +107,10 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void setModel();
 void setView();
 void setProjection();
-void setTransform(int cubeNum);
 
 
 // Function declarations for shader compilation and setup
-bool setupShader();
+bool setupShaderUnified(Shader*& shaderPtr, const char* vertexPath, const char* fragmentPath, const std::string& shaderName);
 bool setupLightShader();
 bool setupLightCubeShader();
 bool setupTextureData();
@@ -153,18 +149,6 @@ void setProjection() {
 	// Set the projection matrix to a perspective projection
 	projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
     ourShader->setMat4("projection", projection);
-}
-
-// Function to set the transformation matrix
-void setTransform(int cubeNum) {
-
-    // Transformation
-    model = glm::mat4(1.0f);
-    model = glm::translate(model, cubePositions[cubeNum]);
-
-	float angle = 20.0f * cubeNum; // Rotate each cube at a different
-    model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-    ourShader->setMat4("model", model);
 }
 
 void setCameraTransform() { 
@@ -263,16 +247,51 @@ bool draw() {
 }
 
 // Setup Shader
-bool setupShader() {
+bool setupShaderUnified(Shader*& shaderPtr, const char* vertexPath, const char* fragmentPath, const std::string& shaderName){
+
     try {
-        // Create a shader using shader class
-        ourShader = new Shader(vertexShaderPath, fragmentShaderPath);
+		// If shader already exists, delete it
+        if (shaderPtr) {
+            delete shaderPtr;
+            shaderPtr = nullptr;
+        }
+
+		// Create a shader using shader class
+        shaderPtr = new Shader(vertexPath, fragmentPath);
+        cout << "[LOG] > msg : " << shaderName << " shader setup successful" << endl;
         return true;
     }
     catch (std::exception& e) {
-        cout << "[Err : Shader] > msg : " << e.what() << endl;
+        cout << "[Err : " << shaderName << " Shader] > msg : " << e.what() << endl;
         return false;
     }
+}
+
+bool setupAllShaders() {
+    bool success = true;
+
+    // Main ¼ÎÀÌ´õ ¼³Á¤
+    if (!loggingDecorator([&]() {
+        return setupShaderUnified(ourShader, vertexShaderPath, fragmentShaderPath, "Main");
+        }, "setupMainShader")) {
+        success = false;
+    }
+
+    // Lighting ¼ÎÀÌ´õ ¼³Á¤
+    if (!loggingDecorator([&]() {
+        return setupShaderUnified(lightingShader, lightVertexShaderPath, lightFragmentShaderPath, "Lighting");
+        }, "setupLightingShader")) {
+        success = false;
+    }
+
+    // LightCube ¼ÎÀÌ´õ ¼³Á¤
+    if (!loggingDecorator([&]() {
+        return setupShaderUnified(lightCubeShader, lightCubeVertexShaderPath, lightCubeFragmentShaderPath, "LightCube");
+        }, "setupLightCubeShader")) {
+        success = false;
+    }
+
+    return success;
 }
 
 // Setup Light Shader
