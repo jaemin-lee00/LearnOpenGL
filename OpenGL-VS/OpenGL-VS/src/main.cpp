@@ -17,14 +17,13 @@
 
 // Document adress
 //
-//  Last file update date : 2025-10-02 11:45
+//  Last file update date : 2025-10-05 19:20
 //
 //  <<theme>> : Basic Lighting
 //  https://learnopengl.com/Lighting/  -Theme-
 //  
 // Make Basice Lighting Class
 /*  
-*   UnderStand Using Decorator Pattern - 10/04
 * 
 *   Before moving on to the next chapter,
 *   let's understand the composition of the composite shader and
@@ -33,13 +32,11 @@
 * 
 * 
 *   Problems to be solved :-----------------------------------------------
-*   The SET function in the current function is dependent on ourShader.
-*   Combine Sider setup into one
 * 
 *   File segmentation of integrated documents for purpose
 * 
 * 
-*   Turn this over to issue checking
+*   Turn this over to issue checking - Make issue for file segmentation
 */
 
 // Namespace for cleaner code
@@ -111,8 +108,7 @@ void setProjection();
 
 // Function declarations for shader compilation and setup
 bool setupShaderUnified(Shader*& shaderPtr, const char* vertexPath, const char* fragmentPath, const std::string& shaderName);
-bool setupLightShader();
-bool setupLightCubeShader();
+bool setupAllShaders();
 bool setupTextureData();
 bool setupVertexData();
 
@@ -219,19 +215,9 @@ bool init() {
 bool draw() {
 
 	// Setup Shader
-	//if (!loggingDecorator(setupShader, "setupShader")) {
-	//	return false;
-	//}
-
-    // Setup LightShader
-    if (!loggingDecorator(setupLightShader, "setupLightShader")) {
-    	return false;
-    }
-
-    // Setup LightCubeShader
-    if (!loggingDecorator(setupLightCubeShader, "setupLightCubeShader")) {
-    	return false;
-    }
+	if (!loggingDecorator(setupAllShaders, "setupAllShader")) {
+		return false;
+	}
 
     // Setup Vertex Data
     if (!loggingDecorator(setupVertexData, "setupVertexData")) {
@@ -292,32 +278,6 @@ bool setupAllShaders() {
     }
 
     return success;
-}
-
-// Setup Light Shader
-bool setupLightShader() {
-    try {
-        // Create a shader using shader class
-        lightingShader = new Shader(lightVertexShaderPath, lightFragmentShaderPath);
-        return true;
-    }
-    catch (std::exception& e) {
-        cout << "[Err : Shader] > msg : " << e.what() << endl;
-        return false;
-    }
-}
-
-// Setup Light Cube Shader
-bool setupLightCubeShader() {
-    try {
-        // Create a shader using shader class
-        lightCubeShader = new Shader(lightCubeVertexShaderPath, lightCubeFragmentShaderPath);
-        return true;
-    }
-    catch (std::exception& e) {
-        cout << "[Err : Shader] > msg : " << e.what() << endl;
-        return false;
-    }
 }
 
 bool setupTextureData() {
