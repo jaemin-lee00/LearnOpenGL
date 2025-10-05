@@ -26,9 +26,7 @@
 /*  
 * 
 *   Before moving on to the next chapter,
-*   let's understand the composition of the composite shader and
-*   use it to re-establish the function setting of the reference method
-* 
+*   Change SetFunction to using multiple shaders
 * 
 * 
 *   Problems to be solved :-----------------------------------------------
@@ -36,7 +34,7 @@
 *   File segmentation of integrated documents for purpose
 * 
 * 
-*   Turn this over to issue checking - Make issue for file segmentation
+*   Turn this over to issue checking - Make issue for file segmentation                         V
 */
 
 // Namespace for cleaner code
@@ -534,7 +532,6 @@ void mainLoop() {
         glfwPollEvents();
     }
 }
-
 
 // Ending process
 void cleanup() {
