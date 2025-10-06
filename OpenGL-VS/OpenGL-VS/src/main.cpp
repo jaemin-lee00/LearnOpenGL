@@ -17,8 +17,8 @@
 
 // Document adress
 //
-//  Last file update date : 2025-10-05 19:20
-//
+//  Last file update date : 2025-10-06 23:20
+// 
 //  <<theme>> : Basic Lighting
 //  https://learnopengl.com/Lighting/  -Theme-
 //  
@@ -32,10 +32,11 @@
 *   Problems to be solved :-----------------------------------------------
 * 
 *   File segmentation of integrated documents for purpose
-* 
+*   Understand File segmentation
 * 
 *   Turn this over to issue checking - Make issue for file segmentation                         V
 */
+
 
 // Namespace for cleaner code
 using namespace std;
@@ -50,7 +51,7 @@ float lastX = SCR_WIDTH / 2.0f; // Last X position of the mouse
 float lastY = SCR_HEIGHT / 2.0f; // Last Y position of the mouse
 bool firstMouse = true; // Flag to check if it's the first mouse input
 
-float deltaTime = 0.0f; // Time between current frame and last frame
+float deltaTime = 0.0f; // Time between current frame and last framezz
 float lastFrame = 0.0f; // Time of last frame
 
 // Light properties
@@ -93,16 +94,15 @@ bool draw();
 void mainLoop();
 void cleanup();
 
-
 void processInput(GLFWwindow* window);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
-void setModel();
-void setView();
-void setProjection();
-
+void setModel(Shader* shader);
+void setView(Shader* shader);
+void setProjection(Shader* shader);
+void setCameraTransform(Shader* shader);
 
 // Function declarations for shader compilation and setup
 bool setupShaderUnified(Shader*& shaderPtr, const char* vertexPath, const char* fragmentPath, const std::string& shaderName);
@@ -124,32 +124,47 @@ auto loggingDecorator(Func func, const std::string& funcName, Args... args) {
     return result;
 }
 
-// Function to set the model matrix
-void setModel() {
-	// Set the model matrix to identity
-	model = glm::rotate(glm::mat4(1.0f), (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
-	ourShader->setMat4("model", model);
+void setModel(Shader* shader) {
+    if (!shader) {
+        cout << "[Err] > msg : Shader is null in setModel" << endl;
+        return;
+    }
+    // Set the model matrix to identity (no transformations)
+    model = glm::mat4(1.0f);
+    shader->setMat4("model", model);
 }
 
 // Function to set the view matrix
-void setView() {
+void setView(Shader* shader) {
+    if (!shader) {
+        cout << "[Err] > msg : Shader is null in setView" << endl;
+        return;
+	}
 	// Set the view matrix to look at the origin from the camera position
 	view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
-	ourShader->setMat4("view", view);
+	shader->setMat4("view", view);
 }
 
 // Function to set the projection matrix
-void setProjection() {
+void setProjection(Shader* shader) {
+    if(!shader) {
+        cout << "[Err] > msg : Shader is null in setProjection" << endl;
+        return;
+	}
+
 	// Set the projection matrix to a perspective projection
 	projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-    ourShader->setMat4("projection", projection);
+    shader->setMat4("projection", projection);
 }
 
-void setCameraTransform() { 
+void setCameraTransform(Shader* shader) {
+    if (!shader) {
+        cout << "[Err] > msg : Shader is null in setCameraTransform" << endl;
+        return;
+	}
     // Set the camera transformation matrix
 	view = camera.GetViewMatrix();
-
-    ourShader->setMat4("view", view);
+    shader->setMat4("view", view);
 }
 
 int main() {
@@ -480,7 +495,6 @@ void mainLoop() {
 		deltaTime = currentFrame - lastFrame;   // calculate time difference between current frame and last frame
 		lastFrame = currentFrame;               // set last frame to current frame
         
-        
         // Input
         processInput(window);
 
@@ -491,23 +505,14 @@ void mainLoop() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
-
 		// Draw the cube
         lightingShader->use();
         lightingShader->setVec3("objectColor", 1.0f, 0.5f, 0.31f);
         lightingShader->setVec3("lightColor", 1.0f, 1.0f, 1.0f);
 
-
-        // View/projection transformations
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        glm::mat4 view = camera.GetViewMatrix();
-        lightingShader->setMat4("projection", projection);
-        lightingShader->setMat4("view", view);
-
-        // World transformation
-        glm::mat4 model = glm::mat4(1.0f);
-        lightingShader->setMat4("model", model);
+        setProjection(lightingShader);
+        setCameraTransform(lightingShader);
+		setModel(lightingShader);
 
         // Render the cube
         glBindVertexArray(cubeVAO);
@@ -548,7 +553,7 @@ void cleanup() {
         lightCubeShader = nullptr;
 	}
 }
-     
+  
 // Running process 
 void processInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
