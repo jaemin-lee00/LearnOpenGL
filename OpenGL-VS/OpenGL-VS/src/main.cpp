@@ -25,10 +25,6 @@
 // Make Basice Lighting Class
 /*  
 * 
-*   Before moving on to the next chapter,
-*   Change SetFunction to using multiple shaders
-* 
-* 
 *   Problems to be solved :-----------------------------------------------
 * 
 *   File segmentation of integrated documents for purpose
@@ -520,8 +516,11 @@ void mainLoop() {
 
         // Render the light cube
         lightCubeShader->use();
-        lightCubeShader->setMat4("projection", projection);
-        lightCubeShader->setMat4("view", view);
+
+		setProjection(lightCubeShader);
+		setCameraTransform(lightCubeShader);
+
+
         model = glm::mat4(1.0f);
         model = glm::translate(model, lightPos);
         model = glm::scale(model, glm::vec3(0.2f)); // a smaller cube
