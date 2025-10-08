@@ -17,14 +17,16 @@
 
 // Document adress
 //
-//  Last file update date : 2025-10-06 23:20
+//  Last file update date : 2025-10-08 23:35
 // 
 //  <<theme>> : Basic Lighting
 //  https://learnopengl.com/Lighting/  -Theme-
 //  
 // Make Basice Lighting Class
 /*  
-* 
+*   Use the view function temporarily to apply a translate and scale to the lightcubShader
+*   but this is not good way, have to change the setview fucntion name
+*   and unsder stand we now just using view shader to camera
 *   Problems to be solved :-----------------------------------------------
 * 
 *   File segmentation of integrated documents for purpose
@@ -136,9 +138,12 @@ void setView(Shader* shader) {
         cout << "[Err] > msg : Shader is null in setView" << endl;
         return;
 	}
-	// Set the view matrix to look at the origin from the camera position
-	view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
-	shader->setMat4("view", view);
+
+    // Set the view matrix to look at the origin from the camera position
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, lightPos);
+    model = glm::scale(model, glm::vec3(0.2f)); // a smaller cube
+    shader->setMat4("model", model);
 }
 
 // Function to set the projection matrix
@@ -519,12 +524,14 @@ void mainLoop() {
 
 		setProjection(lightCubeShader);
 		setCameraTransform(lightCubeShader);
+		setView(lightCubeShader);
+
+        //model = glm::mat4(1.0f);
+        //model = glm::translate(model, lightPos);
+        //model = glm::scale(model, glm::vec3(0.2f)); // a smaller cube
+        //lightCubeShader->setMat4("model", model);
 
 
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, lightPos);
-        model = glm::scale(model, glm::vec3(0.2f)); // a smaller cube
-        lightCubeShader->setMat4("model", model);
 
         glBindVertexArray(lightCubeVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
