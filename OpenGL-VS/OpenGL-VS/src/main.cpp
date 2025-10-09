@@ -98,7 +98,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
 void setModel(Shader* shader);
-void setView(Shader* shader);
+void setModelTransform(Shader* shader);
 void setProjection(Shader* shader);
 void setCameraTransform(Shader* shader);
 
@@ -133,7 +133,7 @@ void setModel(Shader* shader) {
 }
 
 // Function to set the view matrix
-void setView(Shader* shader) {
+void setModelTransform(Shader* shader) {
     if (!shader) {
         cout << "[Err] > msg : Shader is null in setView" << endl;
         return;
@@ -524,7 +524,7 @@ void mainLoop() {
 
 		setProjection(lightCubeShader);
 		setCameraTransform(lightCubeShader);
-		setView(lightCubeShader);
+		setModelTransform(lightCubeShader);
 
         //model = glm::mat4(1.0f);
         //model = glm::translate(model, lightPos);
