@@ -17,16 +17,13 @@
 
 // Document adress
 //
-//  Last file update date : 2025-10-08 23:35
+//  Last file update date : 2025-10-09 23:35
 // 
 //  <<theme>> : Basic Lighting
 //  https://learnopengl.com/Lighting/  -Theme-
 //  
 // Make Basice Lighting Class
 /*  
-*   Use the view function temporarily to apply a translate and scale to the lightcubShader
-*   but this is not good way, have to change the setview fucntion name
-*   and unsder stand we now just using view shader to camera
 *   Problems to be solved :-----------------------------------------------
 * 
 *   File segmentation of integrated documents for purpose
