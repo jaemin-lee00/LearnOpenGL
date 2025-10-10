@@ -27,8 +27,8 @@
 *   Problems to be solved :-----------------------------------------------
 * 
 *   File segmentation of integrated documents for purpose
-*   Understand File segmentation
 * 
+*   Understand the Basic Lighting Class and specially Ambient Lighting
 *   Turn this over to issue checking - Make issue for file segmentation                         V
 */
 
