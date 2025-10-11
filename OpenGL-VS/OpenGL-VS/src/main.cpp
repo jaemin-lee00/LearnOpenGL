@@ -17,7 +17,7 @@
 
 // Document adress
 //
-//  Last file update date : 2025-10-09 23:35
+//  Last file update date : 2025-10-09 23:00
 // 
 //  <<theme>> : Basic Lighting
 //  https://learnopengl.com/Lighting/  -Theme-
@@ -28,7 +28,6 @@
 * 
 *   File segmentation of integrated documents for purpose
 * 
-*   Understand the Basic Lighting Class and specially Ambient Lighting
 *   Turn this over to issue checking - Make issue for file segmentation                         V
 */
 
