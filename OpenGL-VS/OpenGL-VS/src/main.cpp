@@ -25,7 +25,7 @@
 // Make Basice Lighting Class
 /*  
 * 
-*   Understand the theory of Normal Vector in Diffuse lighting
+*   Understand the theory of Inverse Normal Vector in Diffuse lighting
 *   
 *   Problems to be solved :-----------------------------------------------
 * 
