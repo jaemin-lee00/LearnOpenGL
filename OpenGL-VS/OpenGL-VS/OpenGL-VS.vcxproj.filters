@@ -24,10 +24,10 @@
     <None Include="src\shaders\fragmentShader.fs">
       <Filter>shaders</Filter>
     </None>
-    <None Include="src\shaders\colors.vs">
+    <None Include="src\shaders\basic_lighting.vs">
       <Filter>shaders</Filter>
     </None>
-    <None Include="src\shaders\colors.fs">
+    <None Include="src\shaders\basic_lighting.fs">
       <Filter>shaders</Filter>
     </None>
     <None Include="src\shaders\light_cube.vs">

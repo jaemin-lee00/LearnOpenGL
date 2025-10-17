@@ -78,8 +78,8 @@ const char* vertexShaderPath = "src/shaders/vertexShader.vs";
 const char* fragmentShaderPath = "src/shaders/fragmentShader.fs";
     
 // LightingShader Source File Directories
-const char* lightVertexShaderPath = "src/shaders/colors.vs";
-const char* lightFragmentShaderPath = "src/shaders/colors.fs";
+const char* lightVertexShaderPath = "src/shaders/basic_lighting.vs";
+const char* lightFragmentShaderPath = "src/shaders/basic_lighting.fs";
 
 // LightCubeShader Source File Directories
 const char* lightCubeVertexShaderPath = "src/shaders/light_cube.vs";

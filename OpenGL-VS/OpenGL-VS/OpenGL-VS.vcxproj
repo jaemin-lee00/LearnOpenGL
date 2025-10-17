@@ -155,8 +155,8 @@
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\shaders\colors.fs" />
-    <None Include="src\shaders\colors.vs" />
+    <None Include="src\shaders\basic_lighting.fs" />
+    <None Include="src\shaders\basic_lighting.vs" />
     <None Include="src\shaders\fragmentShader.fs" />
     <None Include="src\shaders\light_cube.fs" />
     <None Include="src\shaders\light_cube.vs" />
