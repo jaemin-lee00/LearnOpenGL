@@ -17,15 +17,13 @@
 
 // Document adress
 //
-//  Last file update date : 2025-10-09 23:00
+//  Last file update date : 2025-10-17 22:35
 // 
-//  <<theme>> : Basic Lighting
+//  <<theme>> : Materials
 //  https://learnopengl.com/Lighting/  -Theme-
 //  
-// Make Basice Lighting Class
 /*  
 * 
-*   Understand the theory of Inverse Normal Vector in Diffuse lighting
 *   
 *   Problems to be solved :-----------------------------------------------
 * 
