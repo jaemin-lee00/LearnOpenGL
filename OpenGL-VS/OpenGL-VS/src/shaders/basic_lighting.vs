@@ -11,9 +11,7 @@ uniform mat4 projection; // Projection matrix
 
 void main()
 {
-	FragPos = vec3(model * vec4(aPos, 1.0));
-	Normal = aNormal;
-
-	// Set the position of the fragment in clip space
 	gl_Position = projection * view * model * vec4(aPos, 1.0);
+	FragPos = vec3(model * vec4(aPos, 1.0));
+	Normal = mat3(transpose(inverse(model))) * aNormal;
 }
