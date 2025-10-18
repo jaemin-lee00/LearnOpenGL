@@ -17,13 +17,13 @@
 
 // Document adress
 //
-//  Last file update date : 2025-10-17 22:35
+//  Last file update date : 2025-10-18 23:55
 // 
 //  <<theme>> : Materials
 //  https://learnopengl.com/Lighting/  -Theme-
 //  
 /*  
-* 
+*  ToDo: Do Materials
 *   
 *   Problems to be solved :-----------------------------------------------
 * 
