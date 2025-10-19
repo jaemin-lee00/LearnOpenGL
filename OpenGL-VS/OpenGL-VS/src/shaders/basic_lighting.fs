@@ -1,4 +1,11 @@
 #version 330 core
+struct Material {
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+	float shininess;
+};
+
 out vec4 FragColor;
 
 in vec3 FragPos;
@@ -8,6 +15,7 @@ uniform vec3 lightPos;
 uniform vec3 viewPos;
 uniform vec3 objectColor;
 uniform vec3 lightColor;
+uniform Material material;
 
 void main()
 {
