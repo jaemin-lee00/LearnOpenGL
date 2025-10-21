@@ -17,7 +17,7 @@
 
 // Document adress
 //
-//  Last file update date : 2025-10-20 23:15
+//  Last file update date : 2025-10-21 23:00
 // 
 //  <<theme>> : Materials
 //  https://learnopengl.com/Lighting/  -Theme-
@@ -485,6 +485,12 @@ void mainLoop() {
 		lightingShader->setVec3("lightPos", lightPos);
 		lightingShader->setVec3("viewPos", camera.Position);
 
+
+        // material properties
+        lightingShader->setVec3("material.ambient", 1.0f, 0.5f, 0.31f);
+        lightingShader->setVec3("material.diffuse", 1.0f, 0.5f, 0.31f);
+        lightingShader->setVec3("material.specular", 0.5f, 0.5f, 0.5f); // specular lighting doesn't have full effect on this object's material
+        lightingShader->setFloat("material.shininess", 32.0f);
 
         setProjection(lightingShader);
         setCameraTransform(lightingShader);
