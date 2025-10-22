@@ -17,13 +17,13 @@
 
 // Document adress
 //
-//  Last file update date : 2025-10-21 23:00
+//  Last file update date : 2025-10-22 22:00
 // 
 //  <<theme>> : Materials
 //  https://learnopengl.com/Lighting/  -Theme-
 //  
 /*  
-*  ToDo: Do Materials
+*  Understand Setting materials and to do Light properties
 *   
 *   Problems to be solved :-----------------------------------------------
 * 
