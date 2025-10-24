@@ -485,6 +485,10 @@ void mainLoop() {
 		lightingShader->setVec3("lightPos", lightPos);
 		lightingShader->setVec3("viewPos", camera.Position);
 
+        lightingShader->setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
+        lightingShader->setVec3("light.diffuse", 0.5f, 0.5f, 0.5f); // darken diffuse light a bit
+        lightingShader->setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+
 
         // material properties
         lightingShader->setVec3("material.ambient", 1.0f, 0.5f, 0.31f);
