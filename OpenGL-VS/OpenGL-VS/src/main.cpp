@@ -17,7 +17,7 @@
 
 // Document adress
 //
-//  Last file update date : 2025-10-22 22:00
+//  Last file update date : 2025-10-26 23:20
 // 
 //  <<theme>> : Materials
 //  https://learnopengl.com/Lighting/  -Theme-
@@ -25,7 +25,6 @@
 /*  
 *   Done Materials Chapter
 * 
-*   ToDo: Do Exercise 2 Problems 
 *
 *   Problems to be solved :-----------------------------------------------
 * 
