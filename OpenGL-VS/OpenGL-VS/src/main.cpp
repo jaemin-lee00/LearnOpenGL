@@ -24,7 +24,7 @@
 //  
 /*  
 *   Done Materials Chapter
-* 
+*   UnderStand Lighting maps & Diffuse maps
 *
 *   Problems to be solved :-----------------------------------------------
 * 
