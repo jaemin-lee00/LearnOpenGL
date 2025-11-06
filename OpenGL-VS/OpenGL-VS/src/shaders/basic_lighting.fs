@@ -28,13 +28,13 @@ void main()
 {
 	
 	// ambient
-	vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoords));
+	vec3 ambient = light.ambient * texture(material.diffuse, TexCoords).rgb;
 
 	// Diffuse
 	vec3 norm = normalize(Normal);
 	vec3 lightDir = normalize(light.position - FragPos);
 	float diff = max(dot(norm, lightDir), 0.0);
-	vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoords);
+	vec3 diffuse = light.diffuse * diff * texture(material.diffuse, TexCoords).rgb;
 
 	// specular
 	vec3 viewDir = normalize(viewPos - FragPos);

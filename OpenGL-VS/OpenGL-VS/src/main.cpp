@@ -17,14 +17,13 @@
 
 // Document adress
 //
-//  Last file update date : 2025-11-06 23:20
+//  Last file update date : 2025-11-07 02:55
 // 
 //  <<theme>> : Materials
 //  https://learnopengl.com/Lighting/  -Theme-
 //  
 /*  
-*   Done Materials Chapter
-*   UnderStand Lighting maps & Diffuse maps
+*  Todo : write diffuse maps code
 *
 *   Problems to be solved :-----------------------------------------------
 * 
@@ -312,7 +311,7 @@ bool setupTextureData() {
     int width, height, nrChannels;
 	stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
 
-    unsigned char* data_container = stbi_load("img/container.jpg", &width, &height, &nrChannels, 0);
+    unsigned char* data_container = stbi_load("img/container2.png", &width, &height, &nrChannels, 0);
 
     if (data_container) {
         cout << "[LOG] > msg : Texture container loaded successfully" << endl;
@@ -424,27 +423,25 @@ bool setupVertexData() {
         return false;
     }
 
-
-
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glBindVertexArray(cubeVAO);
-
+    
     // Vertex attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glBindVertexArray(cubeVAO);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FLOAT, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FLOAT, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FLOAT, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 
+	// Light Cube VAO
 	glGenVertexArrays(1, &lightCubeVAO);
 	glBindVertexArray(lightCubeVAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
 	/// Maybe this change to 6 * sizeof(float)
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
 
@@ -454,10 +451,6 @@ bool setupVertexData() {
 
     // Delete VBO as it's no longer needed (optional)
     // glDeleteBuffers(1, &VBO);
-
-    // Uncomment this call to draw in wireframe polygons.
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
 
     return true;
 }
