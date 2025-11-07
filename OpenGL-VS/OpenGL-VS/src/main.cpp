@@ -23,8 +23,10 @@
 //  https://learnopengl.com/Lighting/  -Theme-
 //  
 /*  
-*  Todo : write diffuse maps code
-*
+*   Todo : write diffuse maps code
+*   Change Texture Setup Function to loadTexture
+*   Change in SetupTextureData function doing Change Shader, Active Texture, use LightShader
+* 
 *   Problems to be solved :-----------------------------------------------
 * 
 *   File segmentation of integrated documents for purpose
@@ -53,12 +55,11 @@ float lastFrame = 0.0f; // Time of last frame
 // Light properties
 glm::vec3 lightPos(1.2f, 1.0f, 2.0f); // Position of the light source
 
-// sotres how much we're seeing of either texture
+// sotres how much we're seeing of either texture (naming Teuxter ID) refectoring should be done frequently depending on the situation
 unsigned int texture1, texture2;
 
 // Global variables for OpenGL objects
 GLFWwindow* window = nullptr;
-Shader* ourShader = nullptr;
 Shader* lightingShader = nullptr;
 Shader* lightCubeShader = nullptr;
 
@@ -75,7 +76,7 @@ glm::mat4 projection = glm::mat4(1.0f);
 // Shader Source File Directories
 const char* vertexShaderPath = "src/shaders/vertexShader.vs";
 const char* fragmentShaderPath = "src/shaders/fragmentShader.fs";
-    
+
 // LightingShader Source File Directories
 const char* lightVertexShaderPath = "src/shaders/basic_lighting.vs";
 const char* lightFragmentShaderPath = "src/shaders/basic_lighting.fs";
@@ -268,13 +269,6 @@ bool setupShaderUnified(Shader*& shaderPtr, const char* vertexPath, const char* 
 bool setupAllShaders() {
     bool success = true;
 
-    // Main ºŒ¿Ã¥ı º≥¡§
-    if (!loggingDecorator([&]() {
-        return setupShaderUnified(ourShader, vertexShaderPath, fragmentShaderPath, "Main");
-        }, "setupMainShader")) {
-        success = false;
-    }
-
     // Lighting ºŒ¿Ã¥ı º≥¡§
     if (!loggingDecorator([&]() {
         return setupShaderUnified(lightingShader, lightVertexShaderPath, lightFragmentShaderPath, "Lighting");
@@ -295,7 +289,6 @@ bool setupAllShaders() {
 bool setupTextureData() {
 
     glGenTextures(1, &texture1);
-    glGenTextures(1, &texture2);
 
     glActiveTexture(GL_TEXTURE0); // activate the texture unit first  before binding texture
 	glBindTexture(GL_TEXTURE_2D, texture1);
@@ -314,7 +307,7 @@ bool setupTextureData() {
     unsigned char* data_container = stbi_load("img/container2.png", &width, &height, &nrChannels, 0);
 
     if (data_container) {
-        cout << "[LOG] > msg : Texture container loaded successfully" << endl;
+        cout << "[LOG] > msg : Texture container2 loaded successfully" << endl;
 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data_container);
         glGenerateMipmap(GL_TEXTURE_2D);
@@ -325,36 +318,7 @@ bool setupTextureData() {
     }
     stbi_image_free(data_container);
 
-
-    glActiveTexture(GL_TEXTURE1); // activate the texture unit second before binding texture
-    glBindTexture(GL_TEXTURE_2D, texture2);
-
-    // set the texture wrapping parameters//
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    // load and generate the texture
-    unsigned char* data_awesomeface = stbi_load("img/awesomeface.png", &width, &height, &nrChannels, 0);
-    if (data_awesomeface) {
-        cout << "[LOG] > msg : Texture awesomeface loaded successfully" << endl;
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data_awesomeface);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else {
-        cout << "[Err : Texture] > msg : Failed to load texture" << endl;
-        return false;
-    }
-    stbi_image_free(data_awesomeface);
-
-
-    // set uniform value
-	ourShader->use();
-	ourShader->setVec3("objectColor", 1.0f, 0.5f, 0.31f);
-	ourShader->setVec3("lightColor",  1.0f, 1.0f, 1.0f);
+    // set LightingShader configuration
 
 	stbi_set_flip_vertically_on_load(false); // reset it to default
 
@@ -513,13 +477,6 @@ void mainLoop() {
 		setCameraTransform(lightCubeShader);
 		setModelTransform(lightCubeShader);
 
-        //model = glm::mat4(1.0f);
-        //model = glm::translate(model, lightPos);
-        //model = glm::scale(model, glm::vec3(0.2f)); // a smaller cube
-        //lightCubeShader->setMat4("model", model);
-
-
-
         glBindVertexArray(lightCubeVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
@@ -536,9 +493,9 @@ void cleanup() {
     glDeleteVertexArrays(1, &cubeVAO);
 	glDeleteVertexArrays(1, &lightCubeVAO);
 
-	if (lightCubeShader) {
-		delete ourShader;
-		ourShader = nullptr;
+	if (lightingShader) {
+		delete lightingShader;
+        lightingShader = nullptr;
 	}
 
     if(lightCubeShader){
