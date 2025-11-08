@@ -17,7 +17,7 @@
 
 // Document adress
 //
-//  Last file update date : 2025-11-07 02:55
+//  Last file update date : 2025-11-08 23:55
 // 
 //  <<theme>> : Materials
 //  https://learnopengl.com/Lighting/  -Theme-
@@ -238,9 +238,9 @@ bool draw() {
     }
 
     // Setup Texture Data
-    //if (!loggingDecorator(setupTextureData, "setupTextureData")) {
-    //    return false;
-    //}
+    if (!loggingDecorator(setupTextureData, "setupTextureData")) {
+        return false;
+    }
 
     return true;
 }
@@ -293,17 +293,8 @@ bool setupTextureData() {
     glActiveTexture(GL_TEXTURE0); // activate the texture unit first  before binding texture
 	glBindTexture(GL_TEXTURE_2D, texture1);
 
-    // set the texture wrapping parameters//
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
     // load and generate the texture
     int width, height, nrChannels;
-	stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
-
     unsigned char* data_container = stbi_load("img/container2.png", &width, &height, &nrChannels, 0);
 
     if (data_container) {
@@ -311,6 +302,13 @@ bool setupTextureData() {
 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data_container);
         glGenerateMipmap(GL_TEXTURE_2D);
+
+        // set the texture wrapping parameters//
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     }
     else {
         cout << "[Err : Texture] > msg : Failed to load texture" << endl;
@@ -319,8 +317,6 @@ bool setupTextureData() {
     stbi_image_free(data_container);
 
     // set LightingShader configuration
-
-	stbi_set_flip_vertically_on_load(false); // reset it to default
 
     return true;
 }
