@@ -26,7 +26,8 @@
 *   Todo : write diffuse maps code
 *   Change Texture Setup Function to loadTexture
 *   Change in SetupTextureData function doing Change Shader, Active Texture, use LightShader
-* 
+*   Check Textures Chapter
+*   
 *   Problems to be solved :-----------------------------------------------
 * 
 *   File segmentation of integrated documents for purpose
@@ -56,7 +57,7 @@ float lastFrame = 0.0f; // Time of last frame
 glm::vec3 lightPos(1.2f, 1.0f, 2.0f); // Position of the light source
 
 // sotres how much we're seeing of either texture (naming Teuxter ID) refectoring should be done frequently depending on the situation
-unsigned int texture1, texture2;
+unsigned int textureID, texture2;
 
 // Global variables for OpenGL objects
 GLFWwindow* window = nullptr;
@@ -104,7 +105,7 @@ void setCameraTransform(Shader* shader);
 // Function declarations for shader compilation and setup
 bool setupShaderUnified(Shader*& shaderPtr, const char* vertexPath, const char* fragmentPath, const std::string& shaderName);
 bool setupAllShaders();
-bool setupTextureData();
+bool loadTexture();
 bool setupVertexData();
 
 // Decorator function for error handling
@@ -238,7 +239,7 @@ bool draw() {
     }
 
     // Setup Texture Data
-    if (!loggingDecorator(setupTextureData, "setupTextureData")) {
+    if (!loggingDecorator(loadTexture, "setupTextureData")) {
         return false;
     }
 
@@ -286,12 +287,12 @@ bool setupAllShaders() {
     return success;
 }
 
-bool setupTextureData() {
+bool loadTexture() {
 
-    glGenTextures(1, &texture1);
+    glGenTextures(1, &textureID);
 
     glActiveTexture(GL_TEXTURE0); // activate the texture unit first  before binding texture
-	glBindTexture(GL_TEXTURE_2D, texture1);
+	glBindTexture(GL_TEXTURE_2D, textureID);
 
     // load and generate the texture
     int width, height, nrChannels;
