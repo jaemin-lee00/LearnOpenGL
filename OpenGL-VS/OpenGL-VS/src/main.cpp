@@ -4,20 +4,20 @@
 
 #include <glad/glad.h> // include glad to get all the required OpenGL headers
 #include <GLFW/glfw3.h>
-
 #include <functional>
 #include <cmath>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "include/stb_image.h"
+
 #include "shaders/shader_s.h"
 #include "camera.h"
 
 #include <iostream>
-
+#include <filesystem>
 // Document adress
 //
-//  Last file update date : 2025-11-08 23:55
+//  Last file update date : 2025-11-10 00:05
 // 
 //  <<theme>> : Materials
 //  https://learnopengl.com/Lighting/  -Theme-
@@ -27,12 +27,13 @@
 *   Change Texture Setup Function to loadTexture
 *   Change in SetupTextureData function doing Change Shader, Active Texture, use LightShader
 *   Check Textures Chapter
-*   
+*   Think how to using decorator pattern  for LoadTexture function
+*   Can using TextureID = loggingDecorator(loadTexture, "loadTexture(img/container2.png)", "img/container2.png");
+*   See Copilot for the rest
+* 
 *   Problems to be solved :-----------------------------------------------
 * 
 *   File segmentation of integrated documents for purpose
-* 
-* 
 * 
 */
 
@@ -105,8 +106,9 @@ void setCameraTransform(Shader* shader);
 // Function declarations for shader compilation and setup
 bool setupShaderUnified(Shader*& shaderPtr, const char* vertexPath, const char* fragmentPath, const std::string& shaderName);
 bool setupAllShaders();
-bool loadTexture();
 bool setupVertexData();
+
+unsigned int loadTexture(char const * path);
 
 // Decorator function for error handling
 template <typename Func, typename... Args>
@@ -121,6 +123,9 @@ auto loggingDecorator(Func func, const std::string& funcName, Args... args) {
     }
     return result;
 }
+
+// Function to set the model matrix
+#define LOG_CALL(expr) loggingDecorator([&](){ return (expr); }, #expr)
 
 void setModel(Shader* shader) {
     if (!shader) {
@@ -239,7 +244,7 @@ bool draw() {
     }
 
     // Setup Texture Data
-    if (!loggingDecorator(loadTexture, "setupTextureData")) {
+    if (!LOG_CALL(textureID = loadTexture("img/container2.png"), "loadTexture")) {
         return false;
     }
 
@@ -287,12 +292,10 @@ bool setupAllShaders() {
     return success;
 }
 
-bool loadTexture() {
+unsigned int loadTexture(char const* path) {
 
+	unsigned int textureID;
     glGenTextures(1, &textureID);
-
-    glActiveTexture(GL_TEXTURE0); // activate the texture unit first  before binding texture
-	glBindTexture(GL_TEXTURE_2D, textureID);
 
     // load and generate the texture
     int width, height, nrChannels;
@@ -301,25 +304,30 @@ bool loadTexture() {
     if (data_container) {
         cout << "[LOG] > msg : Texture container2 loaded successfully" << endl;
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data_container);
+        GLenum format = 0;
+        if (nrChannels == 1)
+            format = GL_RED;
+        else if (nrChannels == 3)
+            format = GL_RGB;
+        else if (nrChannels == 4)
+			format = GL_RGBA;
+
+		glBindTexture(GL_TEXTURE_2D, textureID);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data_container);
         glGenerateMipmap(GL_TEXTURE_2D);
 
         // set the texture wrapping parameters//
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     }
     else {
-        cout << "[Err : Texture] > msg : Failed to load texture" << endl;
-        return false;
+        cout << "[Err : Texture] > msg : Failed to load at path : " << path << endl;
     }
     stbi_image_free(data_container);
 
-    // set LightingShader configuration
-
-    return true;
+    return textureID;
 }
 
 bool setupVertexData() {
@@ -451,7 +459,6 @@ void mainLoop() {
         lightingShader->setVec3("light.ambient", ambientColor);
         lightingShader->setVec3("light.diffuse", diffuseColor); // darken diffuse light a bit
         lightingShader->setVec3("light.specular", 1.0f, 1.0f, 1.0f);
-
 
         // material properties
         lightingShader->setVec3("material.ambient", 1.0f, 0.5f, 0.31f);
