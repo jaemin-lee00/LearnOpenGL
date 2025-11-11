@@ -1,7 +1,7 @@
 #version 330 core
 
 struct Material {
-	sample2D diffuse;
+	sampler2D diffuse;
 	vec3 specular;
 	float shininess;
 };

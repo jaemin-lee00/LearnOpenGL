@@ -309,7 +309,6 @@ unsigned int loadTexture(char const* path) {
 
     if (data_container) {
         cout << "[LOG] > msg : Texture container2 loaded successfully" << endl;
-        return 0;
 
         GLenum format = 0;
         if (nrChannels == 1)
@@ -331,7 +330,7 @@ unsigned int loadTexture(char const* path) {
     }
     else {
         cout << "[Err : Texture] > msg : Failed to load at path : " << path << endl;
-
+        return 0;
     }
     stbi_image_free(data_container);
 
