@@ -58,7 +58,7 @@ float lastFrame = 0.0f; // Time of last frame
 glm::vec3 lightPos(1.2f, 1.0f, 2.0f); // Position of the light source
 
 // sotres how much we're seeing of either texture (naming Teuxter ID) refectoring should be done frequently depending on the situation
-unsigned int textureID, texture2;
+unsigned int diffuseMap;
 
 // Global variables for OpenGL objects
 GLFWwindow* window = nullptr;
@@ -123,9 +123,6 @@ auto loggingDecorator(Func func, const std::string& funcName, Args... args) {
     }
     return result;
 }
-
-// Function to set the model matrix
-#define LOG_CALL(expr) loggingDecorator([&](){ return (expr); }, #expr)
 
 void setModel(Shader* shader) {
     if (!shader) {
@@ -244,9 +241,13 @@ bool draw() {
     }
 
     // Setup Texture Data
-    if (!LOG_CALL(textureID = loadTexture("img/container2.png"), "loadTexture")) {
+    diffuseMap = loggingDecorator(loadTexture, "loadTexture", "img / container2.png");
+    if (!diffuseMap) {
         return false;
     }
+
+	lightingShader->use();
+	lightingShader->setInt("material.diffuse", 0); // Set the diffuse map to texture unit 0
 
     return true;
 }
@@ -406,9 +407,9 @@ bool setupVertexData() {
     glBindVertexArray(cubeVAO);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FLOAT, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FLOAT, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
 	// Light Cube VAO
@@ -455,27 +456,24 @@ void mainLoop() {
 		lightingShader->setVec3("light.position", lightPos);
 		lightingShader->setVec3("viewPos", camera.Position);
 
-		// light properties
-		glm::vec3 lightColor;
-		lightColor.x = sin(glfwGetTime() * 2.0f);
-		lightColor.y = sin(glfwGetTime() * 0.7f);
-		lightColor.z = sin(glfwGetTime() * 1.3f);
-		glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f); // decrease the influence
-		glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f); // low influence
-
-        lightingShader->setVec3("light.ambient", ambientColor);
-        lightingShader->setVec3("light.diffuse", diffuseColor); // darken diffuse light a bit
+		
+        lightingShader->setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
+        lightingShader->setVec3("light.diffuse", 0.5f, 0.5f, 0.5f); // darken diffuse light a bit
         lightingShader->setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 
         // material properties
-        lightingShader->setVec3("material.ambient", 1.0f, 0.5f, 0.31f);
-        lightingShader->setVec3("material.diffuse", 1.0f, 0.5f, 0.31f);
+        //lightingShader->setVec3("material.ambient", 1.0f, 0.5f, 0.31f);
+        //lightingShader->setVec3("material.diffuse", 1.0f, 0.5f, 0.31f);
         lightingShader->setVec3("material.specular", 0.5f, 0.5f, 0.5f); // specular lighting doesn't have full effect on this object's material
-        lightingShader->setFloat("material.shininess", 32.0f);
+        lightingShader->setFloat("material.shininess", 4.0f);
 
         setProjection(lightingShader);
         setCameraTransform(lightingShader);
 		setModel(lightingShader);
+
+		// Bind diffuse map
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, diffuseMap);
 
         // Render the cube
         glBindVertexArray(cubeVAO);
