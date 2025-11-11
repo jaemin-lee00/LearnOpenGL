@@ -17,19 +17,13 @@
 #include <filesystem>
 // Document adress
 //
-//  Last file update date : 2025-11-10 00:05
+//  Last file update date : 2025-11-11 14:50
 // 
 //  <<theme>> : Materials
 //  https://learnopengl.com/Lighting/  -Theme-
 //  
 /*  
-*   Todo : write diffuse maps code
-*   Change Texture Setup Function to loadTexture
-*   Change in SetupTextureData function doing Change Shader, Active Texture, use LightShader
-*   Check Textures Chapter
-*   Think how to using decorator pattern  for LoadTexture function
-*   Can using TextureID = loggingDecorator(loadTexture, "loadTexture(img/container2.png)", "img/container2.png");
-*   See Copilot for the rest
+*   Todo : write Lighting maps code
 * 
 *   Problems to be solved :-----------------------------------------------
 * 
