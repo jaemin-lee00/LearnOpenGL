@@ -52,7 +52,7 @@ float lastFrame = 0.0f; // Time of last frame
 glm::vec3 lightPos(1.2f, 1.0f, 2.0f); // Position of the light source
 
 // sotres how much we're seeing of either texture (naming Teuxter ID) refectoring should be done frequently depending on the situation
-unsigned int diffuseMap;
+unsigned int diffuseMap, specularMap;
 
 // Global variables for OpenGL objects
 GLFWwindow* window = nullptr;
@@ -80,6 +80,9 @@ const char* lightFragmentShaderPath = "src/shaders/basic_lighting.fs";
 // LightCubeShader Source File Directories
 const char* lightCubeVertexShaderPath = "src/shaders/light_cube.vs";
 const char* lightCubeFragmentShaderPath = "src/shaders/light_cube.fs";
+
+const char* texturePath = "img/container2.png";
+const char* specularTexturePath = "img/container2_specular.png";
 
 // Function declarations
 bool init();
@@ -235,13 +238,19 @@ bool draw() {
     }
 
     // Setup Texture Data
-    diffuseMap = loggingDecorator(loadTexture, "loadTexture", "img / container2.png");
+    diffuseMap = loggingDecorator(loadTexture, "loadTexture", texturePath);
     if (!diffuseMap) {
         return false;
     }
 
+	specularMap = loggingDecorator(loadTexture, "loadTexture", specularTexturePath);
+    if (!specularMap) {
+        return false;
+	}
+
 	lightingShader->use();
 	lightingShader->setInt("material.diffuse", 0); // Set the diffuse map to texture unit 0
+	lightingShader->setInt("material.specular", 1); // Set the specular map to texture unit 0
 
     return true;
 }
@@ -468,6 +477,9 @@ void mainLoop() {
 		// Bind diffuse map
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, diffuseMap);
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, specularMap);
 
         // Render the cube
         glBindVertexArray(cubeVAO);
