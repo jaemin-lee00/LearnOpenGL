@@ -17,13 +17,14 @@
 #include <filesystem>
 // Document adress
 //
-//  Last file update date : 2025-11-11 14:50
+//  Last file update date : 2025-11-13 16:00
 // 
 //  <<theme>> : Materials
 //  https://learnopengl.com/Lighting/  -Theme-
 //  
 /*  
-*   Todo : write Lighting maps code
+*   Done : Doing Exercise on Mind- Lighting Maps
+*   Todo : Light Casters
 * 
 *   Problems to be solved :-----------------------------------------------
 * 
