@@ -17,9 +17,9 @@
 #include <filesystem>
 // Document adress
 //
-//  Last file update date : 2025-11-13 16:00
+//  Last file update date : 2025-11-14 12:40
 // 
-//  <<theme>> : Materials
+//  <<theme>> : Light-casters
 //  https://learnopengl.com/Lighting/  -Theme-
 //  
 /*  
