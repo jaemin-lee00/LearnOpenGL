@@ -63,6 +63,19 @@ Shader* lightCubeShader = nullptr;
 unsigned int cubeVAO = 0;
 unsigned int lightCubeVAO = 0;
 
+glm::vec3 cubePositions[] = {
+    glm::vec3(0.0f,  0.0f,  0.0f),
+    glm::vec3(2.0f,  5.0f, -15.0f),
+    glm::vec3(-1.5f, -2.2f, -2.5f),
+    glm::vec3(-3.8f, -2.0f, -12.3f),
+    glm::vec3(2.4f, -0.4f, -3.5f),
+    glm::vec3(-1.7f,  3.0f, -7.5f),
+    glm::vec3(1.3f, -2.0f, -2.5f),
+    glm::vec3(1.5f,  2.0f, -2.5f),
+    glm::vec3(1.5f,  0.2f, -1.5f),
+    glm::vec3(-1.3f,  1.0f, -1.5f)
+};
+
 // Model matrix
 glm::mat4 model = glm::mat4(1.0f);
 // view matrix
@@ -457,19 +470,16 @@ void mainLoop() {
 
 		// Draw the cube
         lightingShader->use();
-		lightingShader->setVec3("light.position", lightPos);
+		lightingShader->setVec3("light.direction", -0.2f, -1.0f, 0.3f);
 		lightingShader->setVec3("viewPos", camera.Position);
 
 		
         lightingShader->setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
-        lightingShader->setVec3("light.diffuse", 0.5f, 0.5f, 0.5f); // darken diffuse light a bit
+        lightingShader->setVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
         lightingShader->setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 
         // material properties
-        //lightingShader->setVec3("material.ambient", 1.0f, 0.5f, 0.31f);
-        //lightingShader->setVec3("material.diffuse", 1.0f, 0.5f, 0.31f);
-        lightingShader->setVec3("material.specular", 0.5f, 0.5f, 0.5f); // specular lighting doesn't have full effect on this object's material
-        lightingShader->setFloat("material.shininess", 4.0f);
+        lightingShader->setFloat("material.shininess", 32.0f);
 
         setProjection(lightingShader);
         setCameraTransform(lightingShader);
@@ -484,17 +494,27 @@ void mainLoop() {
 
         // Render the cube
         glBindVertexArray(cubeVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        for (unsigned int i = 0; i < 10; i++)
+        {
+            // calculate the model matrix for each object and pass it to shader before drawing
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, cubePositions[i]);
+            float angle = 20.0f * i;
+            model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+            lightingShader->setMat4("model", model);
+
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
 
         // Render the light cube
-        lightCubeShader->use();
+        // lightCubeShader->use();
 
-		setProjection(lightCubeShader);
-		setCameraTransform(lightCubeShader);
-		setModelTransform(lightCubeShader);
+		//setProjection(lightCubeShader);
+		//setCameraTransform(lightCubeShader);
+		//setModelTransform(lightCubeShader);
 
-        glBindVertexArray(lightCubeVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        //glBindVertexArray(lightCubeVAO);
+        //glDrawArrays(GL_TRIANGLES, 0, 36);
 
         glBindVertexArray(0);
 
