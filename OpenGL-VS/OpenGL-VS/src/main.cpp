@@ -17,14 +17,16 @@
 #include <filesystem>
 // Document adress
 //
-//  Last file update date : 2025-11-14 20:40
+//  Last file update date : 2025-11-16 23:20
 // 
 //  <<theme>> : Light-casters
 //  https://learnopengl.com/Lighting/  -Theme-
 //  
 /*  
-*   Done : Doing Exercise on Mind- Lighting Maps
-*   Todo : Light Casters
+*   Done : Directional Light Part in Light Casters
+*   Todo : Point Lights and Spot Lights
+*   Start with Read at A spotlight
+*   
 * 
 *   Problems to be solved :-----------------------------------------------
 * 
