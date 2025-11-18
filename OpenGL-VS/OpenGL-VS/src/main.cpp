@@ -17,21 +17,20 @@
 #include <filesystem>
 // Document adress
 //
-//  Last file update date : 2025-11-16 23:20
-// 
+//  Last file update date : 2025-11-18 21:15
+//
 //  <<theme>> : Light-casters
 //  https://learnopengl.com/Lighting/  -Theme-
-//  
+//
 /*  
-*   Done : Directional Light Part in Light Casters
-*   Todo : Point Lights and Spot Lights
-*   Start with Read at A spotlight
-*   
-* 
+*   Done : Read Light casters document
+*   Todo : 
+*
+*
 *   Problems to be solved :-----------------------------------------------
-* 
+*
 *   File segmentation of integrated documents for purpose
-* 
+*
 */
 
 
