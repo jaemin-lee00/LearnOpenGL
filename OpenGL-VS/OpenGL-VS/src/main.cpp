@@ -478,9 +478,14 @@ void mainLoop() {
         lightingShader->setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
         lightingShader->setVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
         lightingShader->setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+		lightingShader->setFloat("light.constant", 1.0f);
+		lightingShader->setFloat("light.linear", 0.09f);
+		lightingShader->setFloat("light.quadratic", 0.032f);
+
 
         // material properties
         lightingShader->setFloat("material.shininess", 32.0f);
+
 
         setProjection(lightingShader);
         setCameraTransform(lightingShader);
@@ -508,14 +513,14 @@ void mainLoop() {
         }
 
         // Render the light cube
-        // lightCubeShader->use();
+         lightCubeShader->use();
 
-		//setProjection(lightCubeShader);
-		//setCameraTransform(lightCubeShader);
-		//setModelTransform(lightCubeShader);
+		setProjection(lightCubeShader);
+		setCameraTransform(lightCubeShader);
+		setModelTransform(lightCubeShader);
 
-        //glBindVertexArray(lightCubeVAO);
-        //glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindVertexArray(lightCubeVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
 
         glBindVertexArray(0);
 
