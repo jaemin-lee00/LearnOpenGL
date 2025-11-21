@@ -17,13 +17,13 @@
 #include <filesystem>
 // Document adress
 //
-//  Last file update date : 2025-11-18 21:15
+//  Last file update date : 2025-11-21 22:35
 //
 //  <<theme>> : Light-casters
 //  https://learnopengl.com/Lighting/  -Theme-
 //
 /*  
-*   Done : Read Light casters document
+*   Done : Read Multiple Lights section
 *   Todo : 
 *
 *
