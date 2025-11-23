@@ -17,14 +17,15 @@
 #include <filesystem>
 // Document adress
 //
-//  Last file update date : 2025-11-21 22:35
+//  Last file update date : 2025-11-23 22:45
 //
 //  <<theme>> : Light-casters
 //  https://learnopengl.com/Lighting/  -Theme-
 //
 /*  
-*   Done : Read Multiple Lights section
-*   Todo : 
+*   Done : 
+*   Todo : Read Assimp documentation for model loading
+*   Read after These so called
 *
 *
 *   Problems to be solved :-----------------------------------------------
