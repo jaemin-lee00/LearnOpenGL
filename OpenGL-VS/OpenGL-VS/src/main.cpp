@@ -24,8 +24,8 @@
 //
 /*  
 *   Done : 
-*   Todo : Read Assimp documentation for model loading
-*   Read after These so called
+*   Todo : Building Assimp Model Loader
+*   
 *
 *
 *   Problems to be solved :-----------------------------------------------
