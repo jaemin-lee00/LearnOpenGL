@@ -23,8 +23,8 @@
 //  https://learnopengl.com/Lighting/  -Theme-
 //
 /*  
-*   Done : 
-*   Todo : Building Assimp Model Loader
+*   Done : Building Assimp Model Loader 
+*   Todo : Sutdy Mesh
 *   
 *
 *
