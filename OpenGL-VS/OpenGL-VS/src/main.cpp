@@ -19,15 +19,14 @@
 #include <filesystem>
 // Document adress
 //
-//  Last file update date : 2025-11-23 22:45
+//  Last file update date : 2026-08-06 10:30
 //
 //  <<theme>> : Mesh and Model Loading
 //  https://learnopengl.com/Model-Loading/  -Theme-
 //
 /*  
-*   Done : Sutdy Mesh`s structure
-*   Todo : Learn how to initialization and render Mesh and Model class
-*          Modify the sturcture of the shader_s.h file slightly, referring the example
+*   Done : Sutdy Mesh
+*   Todo : Study Model
 *   
 *
 *
