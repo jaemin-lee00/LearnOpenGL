@@ -7,11 +7,16 @@
 #include <functional>
 #include <cmath>
 
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "include/stb_image.h"
 
 #include "shaders/shader_s.h"
 #include "camera.h"
+#include "mesh.h"
 
 #include <iostream>
 #include <vector>
@@ -25,8 +30,8 @@
 //  https://learnopengl.com/Model-Loading/  -Theme-
 //
 /*  
-*   Done : Sutdy Mesh
-*   Todo : Study Model
+*   Done : Study Model, importing model
+*   Todo : Assimp to Mesh
 *   
 *
 *
@@ -83,6 +88,51 @@ glm::vec3 pointLightPositions[] = {
     glm::vec3(2.3f, -3.3f, -4.0f),
     glm::vec3(-4.0f,  2.0f, -12.0f),
     glm::vec3(0.0f,  0.0f, -3.0f)
+};
+
+class Model {
+public:
+    Model(char* path) {
+        // Load model from path
+        loadModel(path);
+    }
+    void Draw(Shader& shader) {
+        // Draw all meshes in the model
+		for (unsigned int i = 0; i < meshes.size(); i++) {
+			meshes[i].Draw(shader);
+		}
+    };
+private:
+    // model data
+	vector<Mesh> meshes;
+	string directory;
+
+    void loadModel(string path) {
+		Assimp::Importer importer;
+		const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+
+        if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+			cout << "ERROR::ASSIMP::" << importer.GetErrorString() << endl;
+            return;
+        }
+		directory = path.substr(0, path.find_last_of('/'));
+
+		processNode(scene->mRootNode, scene);
+    };
+    void processNode(aiNode* node, const aiScene* scene) {
+		//process all the node's meshes (if any)
+        for (unsigned int i = 0; i < node->mNumMeshes; i++) {
+            aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+            meshes.push_back(processMesh(mesh, scene));
+        }
+		//then do the same for each of its children
+		for (unsigned int i = 0; i < node->mNumChildren; i++) {
+			processNode(node->mChildren[i], scene);
+		}
+        
+    };
+	Mesh processMesh(aiMesh* mesh, const aiScene* scene);
+	vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName);
 };
 
 // Model matrix
