@@ -24,14 +24,14 @@
 #include <filesystem>
 // Document adress
 //
-//  Last file update date : 2026-08-06 10:30
+//  Last file update date : 2026-08-10 03:50
 //
 //  <<theme>> : Mesh and Model Loading
 //  https://learnopengl.com/Model-Loading/  -Theme-
 //
 /*  
-*   Done : Study Model, importing model
-*   Todo : Assimp to Mesh
+*   Done : importing model with Assimp, loading textures, setting up shaders, rendering models
+*   Todo : Optimize Mesh
 *   
 *
 *
@@ -131,8 +131,72 @@ private:
 		}
         
     };
-	Mesh processMesh(aiMesh* mesh, const aiScene* scene);
-	vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName);
+    Mesh processMesh(aiMesh* mesh, const aiScene* scene) {
+
+        vector<Vertex> vertices;
+        vector<unsigned int> indices;
+        vector<Texture> textures;
+
+
+
+        // Process vertices
+        for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
+            Vertex vertex;
+
+
+            // Process position
+            vertex.Position = glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
+            // Process normal
+            if (mesh->mNormals) {
+                vertex.Normal = glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
+            }
+
+            if (mesh->mTextureCoords[0]) { // does the mesh contain texture coordinates?
+                glm::vec2 vec;
+                vec.x = mesh->mTextureCoords[0][i].x;
+                vec.y = mesh->mTextureCoords[0][i].y;
+                vertex.TexCoords = vec;
+            }
+            else {
+                vertex.TexCoords = glm::vec2(0.0f, 0.0f);
+            }
+
+
+            vertices.push_back(vertex);
+        }
+
+        // Process indices
+        for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
+            aiFace face = mesh->mFaces[i];
+            for (unsigned int j = 0; j < face.mNumIndices; j++) {
+                indices.push_back(face.mIndices[j]);
+            }
+        }
+
+		// Process material
+        if (mesh->mMaterialIndex >= 0) {
+			aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+			vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+			textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+			vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
+			textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+        }
+
+		return Mesh(vertices, indices, textures);
+    };
+    vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName) {
+        
+		vector<Texture> textures;
+		for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
+			aiString str;
+			mat->GetTexture(type, i, &str);
+			Texture texture;
+			texture.id = loadTexture((directory + '/' + str.C_Str()).c_str());
+			texture.type = typeName;
+			textures.push_back(texture);
+		}
+		return textures;
+    };
 };
 
 // Model matrix
