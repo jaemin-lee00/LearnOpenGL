@@ -12,18 +12,26 @@
 
 #include <string>
 #include <vector>
-
 using namespace std;
+
+#define MAX_BONE_INFLUENCE 4
 
 struct Vertex {
 	glm::vec3 Position;
 	glm::vec3 Normal;
     glm::vec2 TexCoords;
+
+	glm::vec3 Tangent;
+	glm::vec3 Bitangent;
+		
+	int m_BoneIDs[MAX_BONE_INFLUENCE];
+	int m_Weights[MAX_BONE_INFLUENCE];
 };
 
 struct Texture {
     unsigned int id;
     std::string type;
+	std::string path;
 };
 
 class Mesh {
@@ -32,6 +40,7 @@ public:
     vector<Vertex> vertices;
 	vector<unsigned int> indices;
 	vector<Texture> textures;
+	unsigned int VAO;
 
     Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures) {
 	
@@ -45,6 +54,8 @@ public:
 		
 		unsigned int diffuseNr = 1;
 		unsigned int specularNr = 1;
+		unsigned int normalNr = 1;
+		unsigned int heightNr = 1;
 		for (unsigned int i = 0; i < textures.size(); i++) {
 			glActiveTexture(GL_TEXTURE0 + i); // activate proper texture unit before binding
 			// retrieve texture number (the N in diffuse_textureN)
@@ -56,20 +67,27 @@ public:
 			else if (name == "texture_specular") {
 				number = std::to_string(specularNr++);
 			}
-			shader.setInt((name + number).c_str(), i);
+			else if (name == "texture_normal") {
+				number = std::to_string(normalNr++);
+			}
+			else if (name == "texture_height") {
+				number = std::to_string(heightNr++);
+			}
+			glUniform1i(glGetUniformLocation(shader.ID, (name + number).c_str()), i);
 			glBindTexture(GL_TEXTURE_2D, textures[i].id);
 		}
 
-		glActiveTexture(GL_TEXTURE0);
 
 		//draw mesh
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
+		
+		glActiveTexture(GL_TEXTURE0);
 	};
 private:
 	// render data
-	unsigned int VAO, VBO, EBO;
+	unsigned int VBO, EBO;
 	
 	// initializes all the buffer objects/arrays
 	void setupMesh()
@@ -96,6 +114,21 @@ private:
 		// vertex texture coords
 		glEnableVertexAttribArray(2);
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
+
+		// vertex tangent
+		glEnableVertexAttribArray(3);
+		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Tangent));
+		// vertex bitangent
+		glEnableVertexAttribArray(4);
+		glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Bitangent));
+		// ids
+		glEnableVertexAttribArray(5);
+		glVertexAttribIPointer(5, 4, GL_INT, sizeof(Vertex), (void*)offsetof(Vertex, m_BoneIDs));
+
+		// weights
+		glEnableVertexAttribArray(6);
+		glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_Weights));
+		glBindVertexArray(0);
 
 	};
 };
