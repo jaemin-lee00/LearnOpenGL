@@ -12,7 +12,7 @@
 #include <assimp/postprocess.h>
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "include/stb_image.h"
+#include <stb_image.h>
 
 #include "shaders/shader_s.h"
 #include "camera.h"
@@ -24,25 +24,30 @@
 #include <filesystem>
 // Document adress
 //
-//  Last file update date : 2026-08-16 21:50
+//  Last file update date : 2026-09-04 16:55
 //
 //  <<theme>> : Depth-testing
 //  https://learnopengl.com/Advanced-OpenGL/  -Theme-
 //
 /*  
-*   Done : Depth-testing
-*   Todo : Depth-test function
+*   Done : Depth-test function
+*   Todo : File segmentation of integrated documents for purpose
 *
-*   before write the code , understand the concept of depth-testing and how it works in OpenGL.
+*
 *   Problems to be solved :-----------------------------------------------
 *
-*   File segmentation of integrated documents for purpose
-*
+*   
 */
 
 
 // Namespace for cleaner code
 using namespace std;
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void mouse_callback(GLFWwindow* window, double xposIn, double yposIn);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void processInput(GLFWwindow* window);
+unsigned int loadTexture(char const * path);
 
 // Screen constants
 const unsigned int SCR_WIDTH = 800;
@@ -117,11 +122,6 @@ bool draw();
 void mainLoop();
 void cleanup();
 
-void processInput(GLFWwindow* window);
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void mouse_callback(GLFWwindow* window, double xposIn, double yposIn);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-
 void setModel(Shader* shader);
 void setProjection(Shader* shader);
 void setCameraTransform(Shader* shader);
@@ -131,7 +131,6 @@ bool setupShaderUnified(Shader*& shaderPtr, const char* vertexPath, const char* 
 bool setupAllShaders();
 bool setupVertexData();
 
-unsigned int loadTexture(char const * path);
 
 // Decorator function for error handling
 template <typename Func, typename... Args>
@@ -156,7 +155,6 @@ void setModel(Shader* shader) {
     model = glm::mat4(1.0f);
     shader->setMat4("model", model);
 }
-
 
 // Function to set the projection matrix
 void setProjection(Shader* shader) {
@@ -204,35 +202,49 @@ int main() {
 
 // Init process
 bool init() {
-    // Initialize GLFW
+
+    // glfw : initialize and configure
     if (!glfwInit()) {
         return false;
     }
 
-    glfwWindowHint(GLFW_SAMPLES, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    // Create a windowed mode window and its OpenGL context
-    window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "OpenGL Application", NULL, NULL);
-    if (!window) {
+    window = loggingDecorator(glfwCreateWindow, "glfwCreateWindow",
+                          SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+    
+    if (window == NULL) {
+
+        cout << "Failed to create GLFW window" << endl;
         glfwTerminate();
         return false;
     }
 
     // Make the window's context current
     glfwMakeContextCurrent(window);
-
     // Set callback functions
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 
-    // Initialize GLAD
+	// tell GLFW to capture our mouse
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+	// glad: load all OpenGL function pointers
+    // ---------------------------------------
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+
+        cout << "Failed to initialize GLAD" << endl;
         return false;
     }
+    
+	// configure global opengl state
+	// ---------------------------------------
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_ALWAYS); // always pass the depth test ( same effect as glDisable(GL_DEPTH_TEST) )
+
 
     return true;
 }
@@ -307,51 +319,6 @@ bool setupAllShaders() {
     }
 
     return success;
-}
-
-unsigned int loadTexture(char const* path) {
-
-    if (!path || !*path) {
-        cout << "[Err : Texture] > msg : Invalid texture path" << endl;
-        return 0;
-	}
-
-
-	unsigned int textureID;
-    glGenTextures(1, &textureID);
-
-    // load and generate the texture
-    int width, height, nrChannels;
-    unsigned char* data_container = stbi_load("img/container2.png", &width, &height, &nrChannels, 0);
-
-    if (data_container) {
-        cout << "[LOG] > msg : Texture container2 loaded successfully" << endl;
-
-        GLenum format = 0;
-        if (nrChannels == 1)
-            format = GL_RED;
-        else if (nrChannels == 3)
-            format = GL_RGB;
-        else if (nrChannels == 4)
-			format = GL_RGBA;
-
-		glBindTexture(GL_TEXTURE_2D, textureID);
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data_container);
-        glGenerateMipmap(GL_TEXTURE_2D);
-
-        // set the texture wrapping parameters//
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    }
-    else {
-        cout << "[Err : Texture] > msg : Failed to load at path : " << path << endl;
-        return 0;
-    }
-    stbi_image_free(data_container);
-
-    return textureID;
 }
 
 bool setupVertexData() {
@@ -457,16 +424,12 @@ void mainLoop() {
 		deltaTime = currentFrame - lastFrame;   // calculate time difference between current frame and last frame
 		lastFrame = currentFrame;               // set last frame to current frame
         
+
         // Input
         processInput(window);
 
-		// Depth
-		glEnable(GL_DEPTH_TEST);
-
-		glDepthMask(GL_FALSE); // Unable depth writing temprorarily
-
         // Render
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// be sure to activate shader when setting uniforms/drawing objects
@@ -649,4 +612,50 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn) {
 // -----------------------------------------------------------------------
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
 	camera.ProcessMouseScroll(static_cast<float>(yoffset));
+}
+
+unsigned int loadTexture(char const* path) {
+
+    if (!path || !*path) {
+        cout << "[Err : Texture] > msg : Invalid texture path" << endl;
+        return 0;
+	}
+	unsigned int textureID;
+    glGenTextures(1, &textureID);
+
+    // load and generate the texture
+    int width, height, nrChannels;
+
+    unsigned char* data = stbi_load(path, &width, &height, &nrChannels, 0);
+
+    if (data) {
+        cout << "[LOG] > msg : Texture container2 loaded successfully" << endl;
+
+        GLenum format = 0;
+        if (nrChannels == 1)
+            format = GL_RED;
+        else if (nrChannels == 3)
+            format = GL_RGB;
+        else if (nrChannels == 4)
+			format = GL_RGBA;
+
+		glBindTexture(GL_TEXTURE_2D, textureID);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        // set the texture wrapping parameters//
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		stbi_image_free(data);
+    }
+    else {
+        cout << "[Err : Texture] > msg : Failed to load at path : " << path << endl;
+        return 0;
+    }
+    stbi_image_free(data);
+
+    return textureID;
 }

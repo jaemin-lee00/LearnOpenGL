@@ -165,6 +165,7 @@
   <ItemGroup>
     <ClInclude Include="src\camera.h" />
     <ClInclude Include="src\mesh.h" />
+    <ClInclude Include="src\model.h" />
     <ClInclude Include="src\shaders\shader_s.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -118,10 +118,10 @@ private:
        vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
        textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 
-       vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_NORMAL, "texture_normal");
+       vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
        textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
 
-       vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_height");
+       vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
        textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
 
@@ -145,7 +145,7 @@ private:
 
             if (!skip) {
                 Texture texture;
-                texture.id = loadTexture((directory + '/' + str.C_Str()).c_str());
+                texture.id = TextureFromFile(str.C_Str(), this->directory);
                 texture.type = typeName;
                 textures.push_back(texture);
                 textures_load.push_back(texture);

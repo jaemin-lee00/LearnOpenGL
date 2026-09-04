@@ -47,5 +47,8 @@
     <ClInclude Include="src\mesh.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\model.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
