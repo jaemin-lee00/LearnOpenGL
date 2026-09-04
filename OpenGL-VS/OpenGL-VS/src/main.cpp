@@ -24,14 +24,14 @@
 #include <filesystem>
 // Document adress
 //
-//  Last file update date : 2026-09-04 16:55
+//  Last file update date : 2026-09-04 17:50
 //
-//  <<theme>> : Depth-testing
+//  <<theme>> : stencil-testing
 //  https://learnopengl.com/Advanced-OpenGL/  -Theme-
 //
 /*  
-*   Done : Depth-test function
-*   Todo : File segmentation of integrated documents for purpose
+*   Done : File refactrotying and segmentation of integrated documents for purpose
+*   Todo : stencil-testing
 *
 *
 *   Problems to be solved :-----------------------------------------------
@@ -62,38 +62,6 @@ bool firstMouse = true; // Flag to check if it's the first mouse input
 float deltaTime = 0.0f; // Time between current frame and last framezz
 float lastFrame = 0.0f; // Time of last frame
 
-// sotres how much we're seeing of either texture (naming Teuxter ID) refectoring should be done frequently depending on the situation
-unsigned int diffuseMap, specularMap;
-
-// Global variables for OpenGL objects
-GLFWwindow* window = nullptr;
-Shader* lightingShader = nullptr;
-Shader* lightCubeShader = nullptr;
-
-unsigned int cubeVAO = 0;
-unsigned int lightCubeVAO = 0;
-
-glm::vec3 cubePositions[] = {
-    glm::vec3(0.0f,  0.0f,  0.0f),
-    glm::vec3(2.0f,  5.0f, -15.0f),
-    glm::vec3(-1.5f, -2.2f, -2.5f),
-    glm::vec3(-3.8f, -2.0f, -12.3f),
-    glm::vec3(2.4f, -0.4f, -3.5f),
-    glm::vec3(-1.7f,  3.0f, -7.5f),
-    glm::vec3(1.3f, -2.0f, -2.5f),
-    glm::vec3(1.5f,  2.0f, -2.5f),
-    glm::vec3(1.5f,  0.2f, -1.5f),
-    glm::vec3(-1.3f,  1.0f, -1.5f)
-};
-
-// positions of the point lights
-glm::vec3 pointLightPositions[] = {
-    glm::vec3(0.7f,  0.2f,  2.0f),
-    glm::vec3(2.3f, -3.3f, -4.0f),
-    glm::vec3(-4.0f,  2.0f, -12.0f),
-    glm::vec3(0.0f,  0.0f, -3.0f)
-};
-
 // Model matrix
 glm::mat4 model = glm::mat4(1.0f);
 // view matrix
@@ -101,24 +69,27 @@ glm::mat4 view = glm::mat4(1.0f);
 // projection matrix
 glm::mat4 projection = glm::mat4(1.0f);
 
-// Shader Source File Directories
-const char* vertexShaderPath = "src/shaders/vertexShader.vs";
-const char* fragmentShaderPath = "src/shaders/fragmentShader.fs";
+// Global variables for OpenGL objects
+GLFWwindow* window = nullptr;
 
-// LightingShader Source File Directories
-const char* lightVertexShaderPath = "src/shaders/basic_lighting.vs";
-const char* lightFragmentShaderPath = "src/shaders/basic_lighting.fs";
+//In this case, we use this variable to store the shader program ID, which is used to reference the compiled shader program in OpenGL.
 
-// LightCubeShader Source File Directories
-const char* lightCubeVertexShaderPath = "src/shaders/light_cube.vs";
-const char* lightCubeFragmentShaderPath = "src/shaders/light_cube.fs";
+// sotres how much we're seeing of either texture (naming Teuxter ID) refectoring should be done frequently depending on the situation
+unsigned int cubeTexture, specularMap;
+
+unsigned int cubeVAO = 0;
+unsigned int planeVAO = 0;
+Shader* shader = nullptr;
+
+const char* vertexShaderPath = "src/shaders/depth_testing.vs";
+const char* fragmentShaderPath = "src/shaders/depth_testing.fs";
 
 const char* texturePath = "img/container2.png";
-const char* specularTexturePath = "img/container2_specular.png";
 
 // Function declarations
 bool init();
 bool draw();
+bool setupVertexData();
 void mainLoop();
 void cleanup();
 
@@ -126,21 +97,14 @@ void setModel(Shader* shader);
 void setProjection(Shader* shader);
 void setCameraTransform(Shader* shader);
 
-// Function declarations for shader compilation and setup
-bool setupShaderUnified(Shader*& shaderPtr, const char* vertexPath, const char* fragmentPath, const std::string& shaderName);
-bool setupAllShaders();
-bool setupVertexData();
-
-
 // Decorator function for error handling
 template <typename Func, typename... Args>
 auto loggingDecorator(Func func, const std::string& funcName, Args... args) {
     cout << "[Call] > msg : Calling function: " << funcName << endl;
     auto result = func(args...);
     if (!result) {
-        cout << "[Err] > msg : Error in function: " << funcName << endl;
-    }
-    else {
+        cout << "[Err] > msg : " << funcName << " failed" << endl;
+    } else {
         cout << "[LOG] > msg : Success: " << funcName << endl;
     }
     return result;
@@ -203,367 +167,211 @@ int main() {
 // Init process
 bool init() {
 
-    // glfw : initialize and configure
-    if (!glfwInit()) {
-        return false;
-    }
+	// glfw : initialize and configure
+	if (!glfwInit()) {
+		cout << "[Err] > msg : Failed to initialize GLFW" << endl;
+		return false;
+	}
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    window = loggingDecorator(glfwCreateWindow, "glfwCreateWindow",
-                          SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
-    
-    if (window == NULL) {
+	window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", nullptr, nullptr);
+	if (!window) {
+		cout << "[Err] > msg : Failed to create GLFW window" << endl;
+		glfwTerminate();
+		return false;
+	}
 
-        cout << "Failed to create GLFW window" << endl;
-        glfwTerminate();
-        return false;
-    }
-
-    // Make the window's context current
-    glfwMakeContextCurrent(window);
-    // Set callback functions
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	// Make the window's context current
+	glfwMakeContextCurrent(window);
+	// Set callback functions
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 
 	// tell GLFW to capture our mouse
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	// glad: load all OpenGL function pointers
-    // ---------------------------------------
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+		cout << "[Err] > msg : Failed to initialize GLAD" << endl;
+		return false;
+	}
 
-        cout << "Failed to initialize GLAD" << endl;
-        return false;
-    }
-    
 	// configure global opengl state
-	// ---------------------------------------
-    glEnable(GL_DEPTH_TEST);
-    glDepthMask(GL_ALWAYS); // always pass the depth test ( same effect as glDisable(GL_DEPTH_TEST) )
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
 
-
-    return true;
+	return true;
 }
 
 // Draw process
 bool draw() {
+    // Setup Shader
+    shader = new Shader(vertexShaderPath, fragmentShaderPath);
 
-	// Setup Shader
-	if (!loggingDecorator(setupAllShaders, "setupAllShader")) {
+	// Setup Vertex Data
+	if (!loggingDecorator(setupVertexData, "setupVertexData")) {
 		return false;
 	}
 
-    // Setup Vertex Data
-    if (!loggingDecorator(setupVertexData, "setupVertexData")) {
-        return false;
-    }
-
-    // Setup Texture Data
-    diffuseMap = loggingDecorator(loadTexture, "loadTexture", texturePath);
-    if (!diffuseMap) {
-        return false;
-    }
-
-	specularMap = loggingDecorator(loadTexture, "loadTexture", specularTexturePath);
-    if (!specularMap) {
-        return false;
+	// Setup Texture Data
+	cubeTexture = loggingDecorator(loadTexture, "loadTexture", texturePath);
+	if (!cubeTexture) {
+		return false;
 	}
 
-	lightingShader->use();
-	lightingShader->setInt("material.diffuse", 0); // Set the diffuse map to texture unit 0
-	lightingShader->setInt("material.specular", 1); // Set the specular map to texture unit 0
-
-    return true;
-}
-
-// Setup Shader
-bool setupShaderUnified(Shader*& shaderPtr, const char* vertexPath, const char* fragmentPath, const std::string& shaderName){
-
-    try {
-		// If shader already exists, delete it
-        if (shaderPtr) {
-            delete shaderPtr;
-            shaderPtr = nullptr;
-        }
-
-		// Create a shader using shader class
-        shaderPtr = new Shader(vertexPath, fragmentPath);
-        cout << "[LOG] > msg : " << shaderName << " shader setup successful" << endl;
-        return true;
-    }
-    catch (std::exception& e) {
-        cout << "[Err : " << shaderName << " Shader] > msg : " << e.what() << endl;
-        return false;
-    }
-}
-
-bool setupAllShaders() {
-    bool success = true;
-
-    // Lighting ¼ÎÀÌ´õ ¼³Á¤
-    if (!loggingDecorator([&]() {
-        return setupShaderUnified(lightingShader, lightVertexShaderPath, lightFragmentShaderPath, "Lighting");
-        }, "setupLightingShader")) {
-        success = false;
-    }
-
-    // LightCube ¼ÎÀÌ´õ ¼³Á¤
-    if (!loggingDecorator([&]() {
-        return setupShaderUnified(lightCubeShader, lightCubeVertexShaderPath, lightCubeFragmentShaderPath, "LightCube");
-        }, "setupLightCubeShader")) {
-        success = false;
-    }
-
-    return success;
+	return true;
 }
 
 bool setupVertexData() {
-	// Set up vertex data (and buffer(s)) and configure vertex attributes
-    float vertices[] = {
-        // positions          // normals           // texture coords
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
+    // set up vertex data (and buffer(s)) and configure vertex attributes
+    // ------------------------------------------------------------------
+    float cubeVertices[] = {
+        // positions          // texture Coords
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
 
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
 
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
     };
 
-    unsigned int VBO = 0;
-    unsigned int EBO = 0;
+    float planeVertices[] = {
+        // positions          // texture Coords (note we set these higher than 1 (together with GL_REPEAT as texture wrapping mode). this will cause the floor texture to repeat)
+         5.0f, -0.5f,  5.0f,  2.0f, 0.0f,
+        -5.0f, -0.5f,  5.0f,  0.0f, 0.0f,
+        -5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
 
-    glGenVertexArrays(1, &cubeVAO);
-    if (cubeVAO == 0) {
-        cout << "[Err : VAO ] > msg :  VAO error" << endl;
-        return false;
-    }
+         5.0f, -0.5f,  5.0f,  2.0f, 0.0f,
+        -5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
+         5.0f, -0.5f, -5.0f,  2.0f, 2.0f
+    };
 
-    glGenBuffers(1, &VBO);
-    if (VBO == 0) {
-        cout << "[Err : VBO ] > msg :  VBO error" << endl;
-        return false;
-    }
+	unsigned int planeVBO;
+	unsigned int cubeVBO;
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    
-    // Vertex attribute
+	glGenVertexArrays(1, &cubeVAO);
+	glGenBuffers(1, &cubeVBO);
+	glGenVertexArrays(1, &planeVAO);
+	glGenBuffers(1, &planeVBO);
+
+    // cube VAO
     glBindVertexArray(cubeVAO);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 
-	// Light Cube VAO
-	glGenVertexArrays(1, &lightCubeVAO);
-	glBindVertexArray(lightCubeVAO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	/// Maybe this change to 6 * sizeof(float)
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    // plane VAO
+    glBindVertexArray(planeVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
-
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 
     // Unbind VBO and VAO
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    // Delete VBO as it's no longer needed (optional)
-    // glDeleteBuffers(1, &VBO);
-
     return true;
 }
 
 void mainLoop() {
-    while (!glfwWindowShouldClose(window)) {
-        
+
+    shader->use();
+	shader->setInt("texture1", 0);
+
+	while (!glfwWindowShouldClose(window)) {
+
 		// per-frame time logic
-		// -------------------------------------
 		float currentFrame = static_cast<float>(glfwGetTime());
-		deltaTime = currentFrame - lastFrame;   // calculate time difference between current frame and last frame
-		lastFrame = currentFrame;               // set last frame to current frame
-        
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
 
-        // Input
-        processInput(window);
+		// Input
+		processInput(window);
 
-        // Render
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		// Render
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// be sure to activate shader when setting uniforms/drawing objects
-        lightingShader->use();
-		lightingShader->setVec3("viewPos", camera.Position);
-		lightingShader->setFloat("material.shininess", 32.0f);
+		shader->use();
+		setCameraTransform(shader);
+		setProjection(shader);
 
-        /*
-           Here we set all the uniforms for the 5/6 types of lights we have. We have to set them manually and index
-           the proper PointLight struct in the array to set each uniform variable. This can be done more code-friendly
-           by defining light types as classes and set their values in there, or by using a more efficient uniform approach
-           by using 'Uniform buffer objects', but that is something we'll discuss in the 'Advanced GLSL' tutorial.
-        */
-		// directional light
-		lightingShader->setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
-		lightingShader->setVec3("dirLight.ambient", 0.05f, 0.05f, 0.05f);
-		lightingShader->setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
-		lightingShader->setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
-
-		// point light 1
-		lightingShader->setVec3("pointLights[0].position", pointLightPositions[0]);
-		lightingShader->setVec3("pointLights[0].ambient", 0.05f, 0.05f, 0.05f);
-		lightingShader->setVec3("pointLights[0].diffuse", 0.8f, 0.8f, 0.8f);
-		lightingShader->setVec3("pointLights[0].specular", 1.0f, 1.0f, 1.0f);
-		lightingShader->setFloat("pointLights[0].constant", 1.0f);
-		lightingShader->setFloat("pointLights[0].linear", 0.09f);
-		lightingShader->setFloat("pointLights[0].quadratic", 0.032f);
-
-		// point light 2
-		lightingShader->setVec3("pointLights[1].position", pointLightPositions[1]);
-		lightingShader->setVec3("pointLights[1].ambient", 0.05f, 0.05f, 0.05f);
-		lightingShader->setVec3("pointLights[1].diffuse", 0.8f, 0.8f, 0.8f);
-		lightingShader->setVec3("pointLights[1].specular", 1.0f, 1.0f, 1.0f);
-		lightingShader->setFloat("pointLights[1].constant", 1.0f);
-		lightingShader->setFloat("pointLights[1].linear", 0.09f);
-		lightingShader->setFloat("pointLights[1].quadratic", 0.032f);
-		
-        // point light 3
-		lightingShader->setVec3("pointLights[2].position", pointLightPositions[2]);
-		lightingShader->setVec3("pointLights[2].ambient", 0.05f, 0.05f, 0.05f);
-		lightingShader->setVec3("pointLights[2].diffuse", 0.8f, 0.8f, 0.8f);
-		lightingShader->setVec3("pointLights[2].specular", 1.0f, 1.0f, 1.0f);
-		lightingShader->setFloat("pointLights[2].constant", 1.0f);
-		lightingShader->setFloat("pointLights[2].linear", 0.09f);
-		lightingShader->setFloat("pointLights[2].quadratic", 0.032f);
-
-		// point light 4
-		lightingShader->setVec3("pointLights[3].position", pointLightPositions[3]);
-		lightingShader->setVec3("pointLights[3].ambient", 0.05f, 0.05f, 0.05f);
-		lightingShader->setVec3("pointLights[3].diffuse", 0.8f, 0.8f, 0.8f);
-		lightingShader->setVec3("pointLights[3].specular", 1.0f, 1.0f, 1.0f);
-		lightingShader->setFloat("pointLights[3].constant", 1.0f);
-		lightingShader->setFloat("pointLights[3].linear", 0.09f);
-		lightingShader->setFloat("pointLights[3].quadratic", 0.032f);
-
-        // spotLight
-		lightingShader->setVec3("spotLight.position", camera.Position);
-		lightingShader->setVec3("spotLight.direction", camera.Front);
-		lightingShader->setVec3("spotLight.ambient", 0.0f, 0.0f, 0.0f);
-		lightingShader->setVec3("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
-		lightingShader->setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
-		lightingShader->setFloat("spotLight.constant", 1.0f);
-		lightingShader->setFloat("spotLight.linear", 0.09f);
-		lightingShader->setFloat("spotLight.quadratic", 0.032f);
-		lightingShader->setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
-		lightingShader->setFloat("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
-
-
-        setProjection(lightingShader);
-        setCameraTransform(lightingShader);
-		setModel(lightingShader);
-
-		// Bind diffuse map
+		// cubes
+		glBindVertexArray(cubeVAO);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, diffuseMap);
+		model = glm::translate(glm::mat4(1.0f), glm::vec3(-1.0f, 0.0f, -1.0f));
+		shader->setMat4("model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		model = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f));
+		shader->setMat4("model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		// plane
+		glBindVertexArray(planeVAO);
+		glBindTexture(GL_TEXTURE_2D, cubeTexture);
+		shader->setMat4("model", glm::mat4(1.0f));
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindVertexArray(0);
 
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, specularMap);
-
-        // Render the cube
-        glBindVertexArray(cubeVAO);
-        for (unsigned int i = 0; i < 10; i++)
-        {
-            // calculate the model matrix for each object and pass it to shader before drawing
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, cubePositions[i]);
-            float angle = 20.0f * i;
-            model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-            lightingShader->setMat4("model", model);
-
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
-
-        // Render the light cube
-        lightCubeShader->use();
-
-        lightCubeShader->setMat4("projection", projection);
-        lightCubeShader->setMat4("view", view);
-		
-		// we now draw as many light bulbs as we have point lights.
-		glBindVertexArray(lightCubeVAO);
-		for (unsigned int i = 0; i < 4; i++)
-        {
-			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, pointLightPositions[i]);
-			model = glm::scale(model, glm::vec3(0.2f)); // Make it smaller
-			lightCubeShader->setMat4("model", model);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
-        
-
-
-        glBindVertexArray(0);
-
-        // Swap buffers and poll IO events
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
+		// Swap buffers and poll IO events
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
 }
 
 // Ending process
 void cleanup() {
     glDeleteVertexArrays(1, &cubeVAO);
-	glDeleteVertexArrays(1, &lightCubeVAO);
-
-	if (lightingShader) {
-		delete lightingShader;
-        lightingShader = nullptr;
-	}
-
-    if(lightCubeShader){
-        delete lightCubeShader;
-        lightCubeShader = nullptr;
-	}
+    glDeleteVertexArrays(1, &planeVAO);
+    if (shader) {
+        delete shader;
+        shader = nullptr;
+    }
 }
   
 // Running process 
@@ -616,46 +424,41 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
 
 unsigned int loadTexture(char const* path) {
 
-    if (!path || !*path) {
-        cout << "[Err : Texture] > msg : Invalid texture path" << endl;
-        return 0;
+	if (!path || !*path) {
+		cout << "[Err] > msg : Invalid texture path" << endl;
+		return 0;
 	}
+
 	unsigned int textureID;
-    glGenTextures(1, &textureID);
+	glGenTextures(1, &textureID);
 
-    // load and generate the texture
-    int width, height, nrChannels;
+	// load and generate the texture
+	int width, height, nrChannels;
+	unsigned char* data = stbi_load(path, &width, &height, &nrChannels, 0);
 
-    unsigned char* data = stbi_load(path, &width, &height, &nrChannels, 0);
+	if (!data) {
+		cout << "[Err] > msg : Failed to load texture at path: " << path << endl;
+		return 0;
+	}
 
-    if (data) {
-        cout << "[LOG] > msg : Texture container2 loaded successfully" << endl;
+	GLenum format = 0;
+	if (nrChannels == 1)
+		format = GL_RED;
+	else if (nrChannels == 3)
+		format = GL_RGB;
+	else if (nrChannels == 4)
+		format = GL_RGBA;
 
-        GLenum format = 0;
-        if (nrChannels == 1)
-            format = GL_RED;
-        else if (nrChannels == 3)
-            format = GL_RGB;
-        else if (nrChannels == 4)
-			format = GL_RGBA;
+	glBindTexture(GL_TEXTURE_2D, textureID);
+	glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+	glGenerateMipmap(GL_TEXTURE_2D);
 
-		glBindTexture(GL_TEXTURE_2D, textureID);
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
+	// set the texture wrapping parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        // set the texture wrapping parameters//
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-		stbi_image_free(data);
-    }
-    else {
-        cout << "[Err : Texture] > msg : Failed to load at path : " << path << endl;
-        return 0;
-    }
-    stbi_image_free(data);
-
-    return textureID;
+	stbi_image_free(data);
+	return textureID;
 }

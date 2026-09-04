@@ -155,18 +155,14 @@
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\shaders\basic_lighting.fs" />
-    <None Include="src\shaders\basic_lighting.vs" />
-    <None Include="src\shaders\fragmentShader.fs" />
-    <None Include="src\shaders\light_cube.fs" />
-    <None Include="src\shaders\light_cube.vs" />
-    <None Include="src\shaders\vertexShader.vs" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="src\camera.h" />
     <ClInclude Include="src\mesh.h" />
     <ClInclude Include="src\model.h" />
     <ClInclude Include="src\shaders\shader_s.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\shaders\depth_testing.fs" />
+    <None Include="src\shaders\depth_testing.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
