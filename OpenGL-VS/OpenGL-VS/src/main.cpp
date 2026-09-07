@@ -24,14 +24,14 @@
 #include <filesystem>
 // Document adress
 //
-//  Last file update date : 2026-09-04 17:50
+//  Last file update date : 2026-09-08 00:40
 //
 //  <<theme>> : stencil-testing
 //  https://learnopengl.com/Advanced-OpenGL/  -Theme-
 //
 /*  
-*   Done : File refactrotying and segmentation of integrated documents for purpose
-*   Todo : stencil-testing
+*   Done : studying stencil-testing
+*   Todo : stencil-function ( glStencilFunc ) and stencil-operation ( glStencilOp )
 *
 *
 *   Problems to be solved :-----------------------------------------------
@@ -203,6 +203,9 @@ bool init() {
 	// configure global opengl state
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
+	glEnable(GL_STENCIL_TEST);
+	// glstencilMask(0xFF); // Enable writing to the stencil buffer
+	// glstencilMask(0x00); // Disable writing to the stencil buffer
 
 	return true;
 }
@@ -335,7 +338,7 @@ void mainLoop() {
 
 		// Render
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 		// be sure to activate shader when setting uniforms/drawing objects
 		shader->use();
