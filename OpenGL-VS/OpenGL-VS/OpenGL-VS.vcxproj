@@ -163,6 +163,8 @@
   <ItemGroup>
     <None Include="src\shaders\depth_testing.fs" />
     <None Include="src\shaders\depth_testing.vs" />
+    <None Include="src\shaders\stencil_single_color.fs" />
+    <None Include="src\shaders\stencil_single_color.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

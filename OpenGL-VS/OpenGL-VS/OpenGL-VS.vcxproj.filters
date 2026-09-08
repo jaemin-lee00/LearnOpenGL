@@ -38,5 +38,11 @@
     <None Include="src\shaders\depth_testing.fs">
       <Filter>shaders</Filter>
     </None>
+    <None Include="src\shaders\stencil_single_color.fs">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="src\shaders\stencil_single_color.vs">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

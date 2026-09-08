@@ -24,15 +24,14 @@
 #include <filesystem>
 // Document adress
 //
-//  Last file update date : 2026-09-08 00:40
+//  Last file update date : 2026-09-09 02:45
 //
-//  <<theme>> : stencil-testing
+//  <<theme>> : Blending
 //  https://learnopengl.com/Advanced-OpenGL/  -Theme-
 //
 /*  
-*   Done : studying stencil-testing
-*   Todo : stencil-function ( glStencilFunc ) and stencil-operation ( glStencilOp )
-*
+*   Done : stencil-function
+*   Todo : Blending
 *
 *   Problems to be solved :-----------------------------------------------
 *
@@ -73,16 +72,19 @@ glm::mat4 projection = glm::mat4(1.0f);
 GLFWwindow* window = nullptr;
 
 //In this case, we use this variable to store the shader program ID, which is used to reference the compiled shader program in OpenGL.
-
 // sotres how much we're seeing of either texture (naming Teuxter ID) refectoring should be done frequently depending on the situation
 unsigned int cubeTexture, specularMap;
 
 unsigned int cubeVAO = 0;
 unsigned int planeVAO = 0;
 Shader* shader = nullptr;
+Shader* shaderSingleColor = nullptr;
 
 const char* vertexShaderPath = "src/shaders/depth_testing.vs";
 const char* fragmentShaderPath = "src/shaders/depth_testing.fs";
+
+const char* vertexShaderSingleColorPath = "src/shaders/stencil_single_color.vs";
+const char* fragmentShaderSingleColorPath = "src/shaders/stencil_single_color.fs";
 
 const char* texturePath = "img/container2.png";
 
@@ -93,7 +95,6 @@ bool setupVertexData();
 void mainLoop();
 void cleanup();
 
-void setModel(Shader* shader);
 void setProjection(Shader* shader);
 void setCameraTransform(Shader* shader);
 
@@ -108,16 +109,6 @@ auto loggingDecorator(Func func, const std::string& funcName, Args... args) {
         cout << "[LOG] > msg : Success: " << funcName << endl;
     }
     return result;
-}
-
-void setModel(Shader* shader) {
-    if (!shader) {
-        cout << "[Err] > msg : Shader is null in setModel" << endl;
-        return;
-    }
-    // Set the model matrix to identity (no transformations)
-    model = glm::mat4(1.0f);
-    shader->setMat4("model", model);
 }
 
 // Function to set the projection matrix
@@ -184,9 +175,7 @@ bool init() {
 		return false;
 	}
 
-	// Make the window's context current
 	glfwMakeContextCurrent(window);
-	// Set callback functions
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
@@ -204,8 +193,8 @@ bool init() {
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 	glEnable(GL_STENCIL_TEST);
-	// glstencilMask(0xFF); // Enable writing to the stencil buffer
-	// glstencilMask(0x00); // Disable writing to the stencil buffer
+	glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE); 
 
 	return true;
 }
@@ -214,6 +203,7 @@ bool init() {
 bool draw() {
     // Setup Shader
     shader = new Shader(vertexShaderPath, fragmentShaderPath);
+    shaderSingleColor = new Shader(vertexShaderSingleColorPath, fragmentShaderSingleColorPath);
 
 	// Setup Vertex Data
 	if (!loggingDecorator(setupVertexData, "setupVertexData")) {
@@ -322,9 +312,10 @@ bool setupVertexData() {
 }
 
 void mainLoop() {
-
+    
     shader->use();
 	shader->setInt("texture1", 0);
+
 
 	while (!glfwWindowShouldClose(window)) {
 
@@ -340,26 +331,71 @@ void mainLoop() {
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
+		// set uniforms
+		shaderSingleColor->use();
+        model = glm::mat4(1.0f);
+		setCameraTransform(shaderSingleColor);
+		setProjection(shaderSingleColor);
+
 		// be sure to activate shader when setting uniforms/drawing objects
 		shader->use();
 		setCameraTransform(shader);
 		setProjection(shader);
 
+		// draw floor as normal, but don't write the floor to the stencil buffer, we only care about the containers. We set its mask to 0x00 to not write to the stencil buffer.
+		glStencilMask(0x00); // make sure we don't update the stencil buffer while drawing the floor
+        // floor
+        glBindVertexArray(planeVAO);
+        glBindTexture(GL_TEXTURE_2D, cubeTexture);
+        shader->setMat4("model", glm::mat4(1.0f));
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glBindVertexArray(0);
+
+		// 1st. render pass, draw objects as normal, writing to the stencil buffer
+		glStencilFunc(GL_ALWAYS, 1, 0xFF);
+		glStencilMask(0xFF);
+
 		// cubes
 		glBindVertexArray(cubeVAO);
 		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, cubeTexture);
+        model = glm::mat4(1.0f);
 		model = glm::translate(glm::mat4(1.0f), glm::vec3(-1.0f, 0.0f, -1.0f));
 		shader->setMat4("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
+        model = glm::mat4(1.0f);
 		model = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f));
 		shader->setMat4("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-		// plane
-		glBindVertexArray(planeVAO);
-		glBindTexture(GL_TEXTURE_2D, cubeTexture);
-		shader->setMat4("model", glm::mat4(1.0f));
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+
+		// 2nd. render pass: now draw slightly scaled versions of the objects, this time disabling stencil writing.
+		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+		glStencilMask(0x00);
+		glDisable(GL_DEPTH_TEST);
+		shaderSingleColor->use();
+		float scale = 1.1f;
+        // cubes
+        glBindVertexArray(cubeVAO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, cubeTexture);
+        model = glm::mat4(1.0f);
+        model = glm::translate(glm::mat4(1.0f), glm::vec3(-1.0f, 0.0f, -1.0f));
+		model = glm::scale(model, glm::vec3(scale, scale, scale));
+        shaderSingleColor->setMat4("model", model);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        model = glm::mat4(1.0f);
+        model = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(scale, scale, scale));
+        shaderSingleColor->setMat4("model", model);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        
 		glBindVertexArray(0);
+		glStencilMask(0xFF);
+		glStencilFunc(GL_ALWAYS, 0, 0xFF);
+        glEnable(GL_DEPTH_TEST);
+
+
 
 		// Swap buffers and poll IO events
 		glfwSwapBuffers(window);
@@ -371,10 +407,15 @@ void mainLoop() {
 void cleanup() {
     glDeleteVertexArrays(1, &cubeVAO);
     glDeleteVertexArrays(1, &planeVAO);
+
     if (shader) {
         delete shader;
         shader = nullptr;
     }
+	if (shaderSingleColor) {
+		delete shaderSingleColor;
+		shaderSingleColor = nullptr;
+	}
 }
   
 // Running process 
