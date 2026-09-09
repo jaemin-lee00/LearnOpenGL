@@ -30,8 +30,8 @@
 //  https://learnopengl.com/Advanced-OpenGL/  -Theme-
 //
 /*  
-*   Done : stencil-function
-*   Todo : Blending
+*   Done : unsderstand the concept of blending and how to implement it in OpenGL, Adding window texture
+*   Todo : Discarding fragments
 *
 *   Problems to be solved :-----------------------------------------------
 *
