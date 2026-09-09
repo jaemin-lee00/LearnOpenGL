@@ -24,14 +24,14 @@
 #include <filesystem>
 // Document adress
 //
-//  Last file update date : 2026-09-09 02:45
+//  Last file update date : 2026-09-10 02:35
 //
 //  <<theme>> : Blending
 //  https://learnopengl.com/Advanced-OpenGL/  -Theme-
 //
 /*  
-*   Done : unsderstand the concept of blending and how to implement it in OpenGL, Adding window texture
-*   Todo : Discarding fragments
+*   Done : understand the concept of blending and discard fragment in OpenGL, Adding window texture
+*   Todo : Blending
 *
 *   Problems to be solved :-----------------------------------------------
 *
@@ -73,20 +73,21 @@ GLFWwindow* window = nullptr;
 
 //In this case, we use this variable to store the shader program ID, which is used to reference the compiled shader program in OpenGL.
 // sotres how much we're seeing of either texture (naming Teuxter ID) refectoring should be done frequently depending on the situation
-unsigned int cubeTexture, specularMap;
+unsigned int cubeTexture, floorTexture, transparentTexture;
 
 unsigned int cubeVAO = 0;
 unsigned int planeVAO = 0;
+unsigned int transparentVAO = 0;
 Shader* shader = nullptr;
 Shader* shaderSingleColor = nullptr;
 
 const char* vertexShaderPath = "src/shaders/depth_testing.vs";
 const char* fragmentShaderPath = "src/shaders/depth_testing.fs";
 
-const char* vertexShaderSingleColorPath = "src/shaders/stencil_single_color.vs";
-const char* fragmentShaderSingleColorPath = "src/shaders/stencil_single_color.fs";
+const char* texturePath = "img/marble.jpg";
+const char* floorTexturePath = "img/metal.png";
+const char* transparentTexturePath = "img/grass.png";
 
-const char* texturePath = "img/container2.png";
 
 // Function declarations
 bool init();
@@ -158,52 +159,47 @@ int main() {
 // Init process
 bool init() {
 
-	// glfw : initialize and configure
-	if (!glfwInit()) {
-		cout << "[Err] > msg : Failed to initialize GLFW" << endl;
-		return false;
-	}
+    // glfw : initialize and configure
+    if (!glfwInit()) {
+        cout << "[Err] > msg : Failed to initialize GLFW" << endl;
+        return false;
+    }
 
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", nullptr, nullptr);
-	if (!window) {
-		cout << "[Err] > msg : Failed to create GLFW window" << endl;
-		glfwTerminate();
-		return false;
-	}
+    window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", nullptr, nullptr);
+    if (!window) {
+        cout << "[Err] > msg : Failed to create GLFW window" << endl;
+        glfwTerminate();
+        return false;
+    }
 
-	glfwMakeContextCurrent(window);
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	glfwSetCursorPosCallback(window, mouse_callback);
-	glfwSetScrollCallback(window, scroll_callback);
+    glfwMakeContextCurrent(window);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetScrollCallback(window, scroll_callback);
 
-	// tell GLFW to capture our mouse
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    // tell GLFW to capture our mouse
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-	// glad: load all OpenGL function pointers
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-		cout << "[Err] > msg : Failed to initialize GLAD" << endl;
-		return false;
-	}
+    // glad: load all OpenGL function pointers
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+        cout << "[Err] > msg : Failed to initialize GLAD" << endl;
+        return false;
+    }
 
-	// configure global opengl state
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
-	glEnable(GL_STENCIL_TEST);
-	glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE); 
+    // configure global opengl state
+    glEnable(GL_DEPTH_TEST);
 
-	return true;
+    return true;
 }
 
 // Draw process
 bool draw() {
     // Setup Shader
     shader = new Shader(vertexShaderPath, fragmentShaderPath);
-    shaderSingleColor = new Shader(vertexShaderSingleColorPath, fragmentShaderSingleColorPath);
 
 	// Setup Vertex Data
 	if (!loggingDecorator(setupVertexData, "setupVertexData")) {
@@ -213,6 +209,16 @@ bool draw() {
 	// Setup Texture Data
 	cubeTexture = loggingDecorator(loadTexture, "loadTexture", texturePath);
 	if (!cubeTexture) {
+		return false;
+	}
+
+	floorTexture = loggingDecorator(loadTexture, "loadTexture", floorTexturePath);
+	if (!floorTexture) {
+		return false;
+	}
+
+	transparentTexture = loggingDecorator(loadTexture, "loadTexture", transparentTexturePath);
+	if (!transparentTexture) {
 		return false;
 	}
 
@@ -278,6 +284,28 @@ bool setupVertexData() {
          5.0f, -0.5f, -5.0f,  2.0f, 2.0f
     };
 
+	float transparentVertices[] = {
+		// positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
+        0.0f,  0.5f, 0.0f,  0.0f, 0.0f,
+        0.0f, -0.5f, 0.0f,  0.0f, 1.0f, 
+        1.0f, -0.5f, 0.0f,  1.0f, 1.0f,
+        0.0f,  0.5f, 0.0f,  0.0f, 0.0f,
+        1.0f, -0.5f, 0.0f,  1.0f, 1.0f,
+        1.0f,  0.5f, 0.0f,  1.0f, 0.0f
+	};
+
+	unsigned int transparentVBO;
+	glGenVertexArrays(1, &transparentVAO);
+	glGenBuffers(1, &transparentVBO);
+	glBindVertexArray(transparentVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, transparentVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(transparentVertices), transparentVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glBindVertexArray(0);
+
 	unsigned int planeVBO;
 	unsigned int cubeVBO;
 
@@ -313,6 +341,20 @@ bool setupVertexData() {
 
 void mainLoop() {
     
+	// transparent vegetation locations
+    // --------------------------------
+    vector<glm::vec3> vegetation
+    {
+        glm::vec3(-1.5f, 0.0f, -0.48f),
+        glm::vec3(1.5f, 0.0f, 0.51f),
+        glm::vec3(0.0f, 0.0f, 0.7f),
+        glm::vec3(-0.3f, 0.0f, -2.3f),
+        glm::vec3(0.5f, 0.0f, -0.6f)
+    };
+
+
+	//shader configuration
+	//--------------------
     shader->use();
 	shader->setInt("texture1", 0);
 
@@ -329,31 +371,12 @@ void mainLoop() {
 
 		// Render
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-		// set uniforms
-		shaderSingleColor->use();
-        model = glm::mat4(1.0f);
-		setCameraTransform(shaderSingleColor);
-		setProjection(shaderSingleColor);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// be sure to activate shader when setting uniforms/drawing objects
 		shader->use();
 		setCameraTransform(shader);
 		setProjection(shader);
-
-		// draw floor as normal, but don't write the floor to the stencil buffer, we only care about the containers. We set its mask to 0x00 to not write to the stencil buffer.
-		glStencilMask(0x00); // make sure we don't update the stencil buffer while drawing the floor
-        // floor
-        glBindVertexArray(planeVAO);
-        glBindTexture(GL_TEXTURE_2D, cubeTexture);
-        shader->setMat4("model", glm::mat4(1.0f));
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        glBindVertexArray(0);
-
-		// 1st. render pass, draw objects as normal, writing to the stencil buffer
-		glStencilFunc(GL_ALWAYS, 1, 0xFF);
-		glStencilMask(0xFF);
 
 		// cubes
 		glBindVertexArray(cubeVAO);
@@ -368,34 +391,22 @@ void mainLoop() {
 		shader->setMat4("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
+        // floor
+        glBindVertexArray(planeVAO);
+        glBindTexture(GL_TEXTURE_2D, floorTexture);
+        shader->setMat4("model", glm::mat4(1.0f));
+        glDrawArrays(GL_TRIANGLES, 0, 6);
 
-		// 2nd. render pass: now draw slightly scaled versions of the objects, this time disabling stencil writing.
-		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-		glStencilMask(0x00);
-		glDisable(GL_DEPTH_TEST);
-		shaderSingleColor->use();
-		float scale = 1.1f;
-        // cubes
-        glBindVertexArray(cubeVAO);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, cubeTexture);
-        model = glm::mat4(1.0f);
-        model = glm::translate(glm::mat4(1.0f), glm::vec3(-1.0f, 0.0f, -1.0f));
-		model = glm::scale(model, glm::vec3(scale, scale, scale));
-        shaderSingleColor->setMat4("model", model);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        model = glm::mat4(1.0f);
-        model = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(scale, scale, scale));
-        shaderSingleColor->setMat4("model", model);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        
-		glBindVertexArray(0);
-		glStencilMask(0xFF);
-		glStencilFunc(GL_ALWAYS, 0, 0xFF);
-        glEnable(GL_DEPTH_TEST);
-
-
+		// vegetation
+        glBindVertexArray(transparentVAO);
+		glBindTexture(GL_TEXTURE_2D, transparentTexture);
+		for (unsigned int i = 0; i < vegetation.size(); i++)
+		{
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, vegetation[i]);
+			shader->setMat4("model", model);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+		}
 
 		// Swap buffers and poll IO events
 		glfwSwapBuffers(window);
@@ -407,15 +418,12 @@ void mainLoop() {
 void cleanup() {
     glDeleteVertexArrays(1, &cubeVAO);
     glDeleteVertexArrays(1, &planeVAO);
+    glDeleteVertexArrays(1, &transparentVAO);
 
     if (shader) {
         delete shader;
         shader = nullptr;
     }
-	if (shaderSingleColor) {
-		delete shaderSingleColor;
-		shaderSingleColor = nullptr;
-	}
 }
   
 // Running process 
@@ -498,10 +506,10 @@ unsigned int loadTexture(char const* path) {
 	glGenerateMipmap(GL_TEXTURE_2D);
 
 	// set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT); // for this tutorial: use GL_CLAMP_TO_EDGE to prevent semi-transparent borders. Due to interpolation it takes texels from next repeat 
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	stbi_image_free(data);
 	return textureID;
