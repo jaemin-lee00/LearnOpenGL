@@ -24,14 +24,14 @@
 #include <filesystem>
 // Document adress
 //
-//  Last file update date : 2026-09-10 02:35
+//  Last file update date : 2026-10-06 02:35
 //
 //  <<theme>> : Blending
 //  https://learnopengl.com/Advanced-OpenGL/  -Theme-
 //
 /*  
-*   Done : understand the concept of blending and discard fragment in OpenGL, Adding window texture
-*   Todo : Blending
+*   Done : Blending
+*   Todo : Rendering semi-transparent objects in the correct order
 *
 *   Problems to be solved :-----------------------------------------------
 *
@@ -191,7 +191,8 @@ bool init() {
     }
 
     // configure global opengl state
-    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     return true;
 }
