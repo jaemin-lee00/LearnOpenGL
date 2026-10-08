@@ -24,14 +24,14 @@
 #include <filesystem>
 // Document adress
 //
-//  Last file update date : 2026-10-06 02:35
+//  Last file update date : 2026-10-08 22:00
 //
 //  <<theme>> : Blending
 //  https://learnopengl.com/Advanced-OpenGL/  -Theme-
 //
 /*  
-*   Done : Blending
-*   Todo : Rendering semi-transparent objects in the correct order
+*   Done : Rendering semi-transparent objects in the correct order
+*   Todo : understand the order and wirte the code
 *
 *   Problems to be solved :-----------------------------------------------
 *
