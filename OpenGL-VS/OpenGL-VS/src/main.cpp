@@ -7,26 +7,18 @@
 #include <glad/glad.h> // include glad to get all the required OpenGL headers
 #include <GLFW/glfw3.h>
 
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-
 #include "shaders/shader_s.h"
 #include "camera.h"
-#include "mesh.h"
+#include "model.h"
 
 #include <iostream>
-#include <vector>
-
-#include <map>
-
 // Document adress
 //
 //  Last file update date : 2026-10-10 07:00
 //
 //  <<theme>> : Blending
 //  https://learnopengl.com/Advanced-OpenGL/  -Theme-
-//
+// 
 /*  
 *   Done : understand the order
 *   Todo : wirte the code more clearly and more readable
@@ -84,7 +76,7 @@ const char* fragmentShaderPath = "src/shaders/depth_testing.fs";
 
 const char* texturePath = "img/marble.jpg";
 const char* floorTexturePath = "img/metal.png";
-const char* transparentTexturePath = "img/grass.png";
+const char* transparentTexturePath = "img/window.png";
 
 
 // Function declarations
@@ -340,7 +332,7 @@ bool setupVertexData() {
 
 void mainLoop() {
     
-	// transparent vegetation locations
+	// transparent windows locations
     // --------------------------------
 	vector<glm::vec3> windows
     {
@@ -405,16 +397,16 @@ void mainLoop() {
         shader->setMat4("model", glm::mat4(1.0f));
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
-		// vegetation
+		// windows (from furthest to nearest)
         glBindVertexArray(transparentVAO);
 		glBindTexture(GL_TEXTURE_2D, transparentTexture);
-		//for (unsigned int i = 0; i < vegetation.size(); i++)
-		//{
-		//	model = glm::mat4(1.0f);
-		//	model = glm::translate(model, vegetation[i]);
-		//	shader->setMat4("model", model);
-		//	glDrawArrays(GL_TRIANGLES, 0, 6);
-		//}
+		for (std::map<float, glm::vec3>::reverse_iterator it = sorted.rbegin(); it != sorted.rend(); ++it)
+		{
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, it->second);
+			shader->setMat4("model", model);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+		}
 
 		// Swap buffers and poll IO events
 		glfwSwapBuffers(window);
