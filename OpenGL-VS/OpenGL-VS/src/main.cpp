@@ -21,7 +21,7 @@
 // 
 /*  
 *   Done : understand the order
-*   Todo : wirte the code more clearly and more readable
+*   Todo : face culling
 *
 *   Problems to be solved :-----------------------------------------------
 *
