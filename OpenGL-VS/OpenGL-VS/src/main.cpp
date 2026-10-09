@@ -2,17 +2,14 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 #include <glad/glad.h> // include glad to get all the required OpenGL headers
 #include <GLFW/glfw3.h>
-#include <functional>
-#include <cmath>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
 
 #include "shaders/shader_s.h"
 #include "camera.h"
@@ -21,17 +18,18 @@
 #include <iostream>
 #include <vector>
 
-#include <filesystem>
+#include <map>
+
 // Document adress
 //
-//  Last file update date : 2026-10-08 22:00
+//  Last file update date : 2026-10-10 07:00
 //
 //  <<theme>> : Blending
 //  https://learnopengl.com/Advanced-OpenGL/  -Theme-
 //
 /*  
-*   Done : Rendering semi-transparent objects in the correct order
-*   Todo : understand the order and wirte the code
+*   Done : understand the order
+*   Todo : wirte the code more clearly and more readable
 *
 *   Problems to be solved :-----------------------------------------------
 *
@@ -344,7 +342,7 @@ void mainLoop() {
     
 	// transparent vegetation locations
     // --------------------------------
-    vector<glm::vec3> vegetation
+	vector<glm::vec3> windows
     {
         glm::vec3(-1.5f, 0.0f, -0.48f),
         glm::vec3(1.5f, 0.0f, 0.51f),
@@ -369,6 +367,15 @@ void mainLoop() {
 
 		// Input
 		processInput(window);
+
+        // sort the transparent windows before rendering
+        // ---------------------------------------------
+        map<float, glm::vec3> sorted;
+        for (unsigned int i = 0; i < windows.size(); i++)
+        {
+            float distance = glm::length(camera.Position - windows[i]);
+            sorted[distance] = windows[i];
+        }
 
 		// Render
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -401,13 +408,13 @@ void mainLoop() {
 		// vegetation
         glBindVertexArray(transparentVAO);
 		glBindTexture(GL_TEXTURE_2D, transparentTexture);
-		for (unsigned int i = 0; i < vegetation.size(); i++)
-		{
-			model = glm::mat4(1.0f);
-			model = glm::translate(model, vegetation[i]);
-			shader->setMat4("model", model);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-		}
+		//for (unsigned int i = 0; i < vegetation.size(); i++)
+		//{
+		//	model = glm::mat4(1.0f);
+		//	model = glm::translate(model, vegetation[i]);
+		//	shader->setMat4("model", model);
+		//	glDrawArrays(GL_TRIANGLES, 0, 6);
+		//}
 
 		// Swap buffers and poll IO events
 		glfwSwapBuffers(window);
