@@ -14,14 +14,14 @@
 #include <iostream>
 // Document adress
 //
-//  Last file update date : 2026-10-10 07:00
+//  Last file update date : 2026-10-11 02:30
 //
 //  <<theme>> : Blending
 //  https://learnopengl.com/Advanced-OpenGL/  -Theme-
 // 
 /*  
-*   Done : understand the order
-*   Todo : face culling
+*   Done : understand the face culling order
+*   Todo : face culling and write the code to implement it
 *
 *   Problems to be solved :-----------------------------------------------
 *
