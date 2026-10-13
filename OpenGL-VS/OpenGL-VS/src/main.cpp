@@ -14,14 +14,14 @@
 #include <iostream>
 // Document adress
 //
-//  Last file update date : 2026-10-13 03:00
+//  Last file update date : 2026-10-13 22:20
 //
 //  <<theme>> : Framebuffers
 //  https://learnopengl.com/Advanced-OpenGL/  -Theme-
 // 
 /*  
-*   Done : understand the face culling 
-*   Todo : Framebuffers
+*   Done :  understand create Framebuffers and teuxtures and renderbuffers
+*   Todo :  Rendering to a texture
 *
 *   Problems to be solved :-----------------------------------------------
 *
