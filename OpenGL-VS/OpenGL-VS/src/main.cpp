@@ -14,14 +14,14 @@
 #include <iostream>
 // Document adress
 //
-//  Last file update date : 2026-10-13 22:20
+//  Last file update date : 2026-10-16 07:50
 //
 //  <<theme>> : Framebuffers
 //  https://learnopengl.com/Advanced-OpenGL/  -Theme-
 // 
 /*  
-*   Done :  understand create Framebuffers and teuxtures and renderbuffers
-*   Todo :  Rendering to a texture
+*   Done : Rendering to a texture
+*   Todo : Post-processing
 *
 *   Problems to be solved :-----------------------------------------------
 *
@@ -350,6 +350,17 @@ void mainLoop() {
     shader->use();
 	shader->setInt("texture1", 0);
 
+	unsigned int framebuffer;
+	glGenFramebuffers(1, &framebuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+	unsigned int textureColorbuffer;
+	glGenTextures(1, &textureColorbuffer);
+	glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
 
 	while (!glfwWindowShouldClose(window)) {
 
