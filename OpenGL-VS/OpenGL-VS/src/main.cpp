@@ -14,14 +14,14 @@
 #include <iostream>
 // Document adress
 //
-//  Last file update date : 2026-10-16 07:50
+//  Last file update date : 2026-10-17 21:30
 //
-//  <<theme>> : Framebuffers
+//  <<theme>> : Cubemaps
 //  https://learnopengl.com/Advanced-OpenGL/  -Theme-
 // 
 /*  
-*   Done : Rendering to a texture
-*   Todo : Post-processing
+*   Done : Framebuffer
+*   Todo : Cubemaps
 *
 *   Problems to be solved :-----------------------------------------------
 *
