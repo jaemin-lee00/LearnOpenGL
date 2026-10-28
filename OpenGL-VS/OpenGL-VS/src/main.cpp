@@ -14,14 +14,14 @@
 #include <iostream>
 // Document adress
 //
-//  Last file update date : 2026-10-26 01:05
+//  Last file update date : 2026-10-29 12:40
 //
-//  <<theme>> : Cubemaps
+//  <<theme>> : Advanced GLSL
 //  https://learnopengl.com/Advanced-OpenGL/  -Theme-
 // 
 /*  
-*   Done : Environment mapping, and more advanced lighting techniques and Reflection
-*   Todo : Refraction, and more advanced lighting techniques and Refraction
+*   Done : Cubemaps, Advanced data
+*   Todo : gl_VertexID in Advanced GLSL 
 *
 *   Problems to be solved :-----------------------------------------------
 *
