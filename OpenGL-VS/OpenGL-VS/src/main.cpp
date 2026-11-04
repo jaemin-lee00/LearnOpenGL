@@ -14,14 +14,14 @@
 #include <iostream>
 // Document adress
 //
-//  Last file update date : 2026-10-31 04:40
+//  Last file update date : 2026-11-04 15:35
 //
 //  <<theme>> : Advanced GLSL
 //  https://learnopengl.com/Advanced-OpenGL/  -Theme-
 // 
 /*  
-*   Done : gl_VertexID in Advanced GLSL, Fragment Shader in Advanced GLSL
-*   Todo : Interface Block in Advanced GLSL, Uniform Buffer Object in Advanced GLSL,
+*   Done : Uniform Block Layout,  in Advanced GLSL, Uniform Buffer Object in Advanced GLSL,
+*   Todo : uniform block using uniform buffer object,  in Advanced GLSL,
 *
 *   Problems to be solved :-----------------------------------------------
 *
