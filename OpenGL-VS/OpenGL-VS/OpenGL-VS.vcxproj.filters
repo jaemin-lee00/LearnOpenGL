@@ -16,9 +16,6 @@
     <ClCompile Include="src\main.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\stb_image.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\shaders\shader_s.h">
@@ -35,16 +32,19 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\shaders\depth_testing.vs">
+    <None Include="src\shaders\advanced_glsl.vs">
       <Filter>shaders</Filter>
     </None>
-    <None Include="src\shaders\depth_testing.fs">
+    <None Include="src\shaders\red.fs">
       <Filter>shaders</Filter>
     </None>
-    <None Include="src\shaders\stencil_single_color.fs">
+    <None Include="src\shaders\green.fs">
       <Filter>shaders</Filter>
     </None>
-    <None Include="src\shaders\stencil_single_color.vs">
+    <None Include="src\shaders\blue.fs">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="src\shaders\yellow.fs">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>

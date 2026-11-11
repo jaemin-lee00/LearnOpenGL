@@ -14,14 +14,14 @@
 #include <iostream>
 // Document adress
 //
-//  Last file update date : 2026-11-04 15:35
+//  Last file update date : 2026-11-11 01:35
 //
 //  <<theme>> : Advanced GLSL
 //  https://learnopengl.com/Advanced-OpenGL/  -Theme-
 // 
 /*  
-*   Done : Uniform Block Layout,  in Advanced GLSL, Uniform Buffer Object in Advanced GLSL,
-*   Todo : uniform block using uniform buffer object,  in Advanced GLSL,
+*   Done : Uniform Block and buffer ,  in Advanced GLSL, Uniform Buffer Object in Advanced GLSL,
+*   Todo : Read the examples and write the code,  in Advanced GLSL,
 *
 *   Problems to be solved :-----------------------------------------------
 *
@@ -64,39 +64,25 @@ GLFWwindow* window = nullptr;
 
 //In this case, we use this variable to store the shader program ID, which is used to reference the compiled shader program in OpenGL.
 // sotres how much we're seeing of either texture (naming Teuxter ID) refectoring should be done frequently depending on the situation
-unsigned int cubeTexture, skyboxTexture;
+unsigned int cubeTexture;
+unsigned int cubeVAO, cubeVBO;
+unsigned int uboMatrices; // Uniform Buffer Object for matrices
 
-unsigned int cubeVAO, skyboxVAO = 0;
-unsigned int cubeVBO, skyboxVBO;
+Shader* shaderRed = nullptr, *shaderGreen = nullptr, *shaderBlue = nullptr, *shaderYellow = nullptr;
 
-Shader* shader = nullptr;
-Shader* skyboxShader = nullptr;
+const char* vertexShaderPath = "src/shaders/advanced_glsl.vs";
 
-const char* vertexShaderPath = "src/shaders/depth_testing.vs";
-const char* fragmentShaderPath = "src/shaders/depth_testing.fs";
+const char* fragmentShaderRedPath = "src/shaders/red.fs";
+const char* fragmentShaderGreenPath = "src/shaders/green.fs";
+const char* fragmentShaderBluePath = "src/shaders/blue.fs";
+const char* fragmentShaderYellowPath = "src/shaders/yellow.fs";
 
-const char* vertexShaderPathSkybox = "src/shaders/stencil_single_color.vs";
-const char* fragmentShaderPathSkybox = "src/shaders/stencil_single_color.fs";
-
-const char* texturePath = "img/container.jpg";
-const char* skyboxFaces[6] = {
-    "img/skybox/right.jpg",
-    "img/skybox/left.jpg",
-    "img/skybox/top.jpg",
-    "img/skybox/bottom.jpg",
-    "img/skybox/front.jpg",
-    "img/skybox/back.jpg"
-};
 
 // Function declarations
 bool init();
 bool draw();
 bool setupVertexData();
 void mainLoop();
-void cleanup();
-
-void setProjection(Shader* shader);
-void setCameraTransform(Shader* shader);
 
 // Decorator function for error handling
 template <typename Func, typename... Args>
@@ -109,28 +95,6 @@ auto loggingDecorator(Func func, const std::string& funcName, Args... args) {
         cout << "[LOG] > msg : Success: " << funcName << endl;
     }
     return result;
-}
-
-// Function to set the projection matrix
-void setProjection(Shader* shader) {
-    if(!shader) {
-        cout << "[Err] > msg : Shader is null in setProjection" << endl;
-        return;
-	}
-
-	// Set the projection matrix to a perspective projection
-	projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-    shader->setMat4("projection", projection);
-}
-
-void setCameraTransform(Shader* shader) {
-    if (!shader) {
-        cout << "[Err] > msg : Shader is null in setCameraTransform" << endl;
-        return;
-	}
-    // Set the camera transformation matrix
-	view = camera.GetViewMatrix();
-    shader->setMat4("view", view);
 }
 
 int main() {
@@ -148,8 +112,6 @@ int main() {
     // Main Render Loop
     mainLoop();
 
-    // Clean up resources
-    cleanup();
 
     glfwTerminate();
     return 0;
@@ -198,8 +160,10 @@ bool init() {
 // Draw process
 bool draw() {
     // Setup Shader
-    shader = new Shader(vertexShaderPath, fragmentShaderPath);
-    skyboxShader = new Shader(vertexShaderPathSkybox , fragmentShaderPathSkybox);
+    shaderRed = new Shader(vertexShaderPath, fragmentShaderRedPath);
+    shaderGreen = new Shader(vertexShaderPath, fragmentShaderGreenPath);
+    shaderBlue = new Shader(vertexShaderPath, fragmentShaderBluePath);
+    shaderYellow = new Shader(vertexShaderPath, fragmentShaderYellowPath);
 
 	// Setup Vertex Data
 	if (!loggingDecorator(setupVertexData, "setupVertexData")) {
@@ -207,16 +171,11 @@ bool draw() {
 	}
 
 	// Setup Texture Data
-	cubeTexture = loggingDecorator(loadTexture, "loadTexture", texturePath);
-	if (!cubeTexture) {
-		return false;
-	}
-    
+	//cubeTexture = loggingDecorator(loadTexture, "loadTexture", texturePath);
+	//if (!cubeTexture) {
+	//	return false;
+	//}
 
-	skyboxTexture = loggingDecorator(loadCubemap, "loadCubemap", vector<std::string>(skyboxFaces, skyboxFaces + 6));
-	if (!skyboxTexture) {
-		return false;
-	}
 
 	return true;
 }
@@ -225,115 +184,82 @@ bool setupVertexData() {
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float cubeVertices[] = {
-        // positions          // texture Coords
-    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-     0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+        // positions         
+        -0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f, -0.5f,
+         0.5f,  0.5f, -0.5f,
+         0.5f,  0.5f, -0.5f,
+        -0.5f,  0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,
 
-    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-     0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-     0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-     0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,
+         0.5f, -0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
+        -0.5f, -0.5f,  0.5f,
 
-    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-    -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-    -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
 
-     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-     0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-     0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,
+         0.5f,  0.5f, -0.5f,
+         0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
 
-    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-     0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f,  0.5f,
+         0.5f, -0.5f,  0.5f,
+        -0.5f, -0.5f,  0.5f,
+        -0.5f, -0.5f, -0.5f,
 
-    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-     0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
+        -0.5f,  0.5f, -0.5f,
+         0.5f,  0.5f, -0.5f,
+         0.5f,  0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f, -0.5f,
     };
-    float skyboxVertices[] = {
-        // positions          
-        -1.0f,  1.0f, -1.0f,
-        -1.0f, -1.0f, -1.0f,
-         1.0f, -1.0f, -1.0f,
-         1.0f, -1.0f, -1.0f,
-         1.0f,  1.0f, -1.0f,
-        -1.0f,  1.0f, -1.0f,
-
-        -1.0f, -1.0f,  1.0f,
-        -1.0f, -1.0f, -1.0f,
-        -1.0f,  1.0f, -1.0f,
-        -1.0f,  1.0f, -1.0f,
-        -1.0f,  1.0f,  1.0f,
-        -1.0f, -1.0f,  1.0f,
-
-         1.0f, -1.0f, -1.0f,
-         1.0f, -1.0f,  1.0f,
-         1.0f,  1.0f,  1.0f,
-         1.0f,  1.0f,  1.0f,
-         1.0f,  1.0f, -1.0f,
-         1.0f, -1.0f, -1.0f,
-
-        -1.0f, -1.0f,  1.0f,
-        -1.0f,  1.0f,  1.0f,
-         1.0f,  1.0f,  1.0f,
-         1.0f,  1.0f,  1.0f,
-         1.0f, -1.0f,  1.0f,
-        -1.0f, -1.0f,  1.0f,
-
-        -1.0f,  1.0f, -1.0f,
-         1.0f,  1.0f, -1.0f,
-         1.0f,  1.0f,  1.0f,
-         1.0f,  1.0f,  1.0f,
-        -1.0f,  1.0f,  1.0f,
-        -1.0f,  1.0f, -1.0f,
-
-        -1.0f, -1.0f, -1.0f,
-        -1.0f, -1.0f,  1.0f,
-         1.0f, -1.0f, -1.0f,
-         1.0f, -1.0f, -1.0f,
-        -1.0f, -1.0f,  1.0f,
-         1.0f, -1.0f,  1.0f
-    };
-
 
 	glGenVertexArrays(1, &cubeVAO);
 	glGenBuffers(1, &cubeVBO);
-	glGenVertexArrays(1, &skyboxVAO);
-	glGenBuffers(1, &skyboxVBO);
 
     // cube VAO
     glBindVertexArray(cubeVAO);
     glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-
-    // skybox VAO
-    glBindVertexArray(skyboxVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), skyboxVertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+	unsigned int uniformBlockIndexRed = glGetUniformBlockIndex(shaderRed->ID, "Matrices");
+	unsigned int uniformBlockIndexGreen = glGetUniformBlockIndex(shaderGreen->ID, "Matrices");
+	unsigned int uniformBlockIndexBlue = glGetUniformBlockIndex(shaderBlue->ID, "Matrices");
+	unsigned int uniformBlockIndexYellow = glGetUniformBlockIndex(shaderYellow->ID, "Matrices");
+
+	glUniformBlockBinding(shaderRed->ID, uniformBlockIndexRed, 0);
+	glUniformBlockBinding(shaderGreen->ID, uniformBlockIndexGreen, 0);
+	glUniformBlockBinding(shaderBlue->ID, uniformBlockIndexBlue, 0);
+	glUniformBlockBinding(shaderYellow->ID, uniformBlockIndexYellow, 0);
+
+	glGenBuffers(1, &uboMatrices);
+	glBindBuffer(GL_UNIFORM_BUFFER, uboMatrices);
+	glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), NULL, GL_STATIC_DRAW);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+	glBindBufferRange(GL_UNIFORM_BUFFER, 0, uboMatrices, 0, 2 * sizeof(glm::mat4));
+
+	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+	glBindBuffer(GL_UNIFORM_BUFFER, uboMatrices);
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(projection));
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
 
     // Unbind VBO and VAO
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -344,26 +270,6 @@ bool setupVertexData() {
 
 void mainLoop() {
     
-	// transparent windows locations
-    // --------------------------------
-	vector<glm::vec3> windows
-    {
-        glm::vec3(-1.5f, 0.0f, -0.48f),
-        glm::vec3(1.5f, 0.0f, 0.51f),
-        glm::vec3(0.0f, 0.0f, 0.7f),
-        glm::vec3(-0.3f, 0.0f, -2.3f),
-        glm::vec3(0.5f, 0.0f, -0.6f)
-    };
-
-
-	//shader configuration
-	//--------------------
-    shader->use();
-	shader->setInt("skybox", 0);
-
-	skyboxShader->use();
-	skyboxShader->setInt("skybox", 0);
-
 	while (!glfwWindowShouldClose(window)) {
 
 		// per-frame time logic
@@ -374,38 +280,41 @@ void mainLoop() {
 		// Input
 		processInput(window);
 
-
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // draw scene as normal
-		shader->use();
-		setCameraTransform(shader);
-		shader->setMat4("model", model);
-		setProjection(shader);
-		shader->setVec3("cameraPos", camera.Position);
+		glm::mat4 view = camera.GetViewMatrix();
+		glBindBuffer(GL_UNIFORM_BUFFER, uboMatrices);
+		glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(view));
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-		// cubes
 		glBindVertexArray(cubeVAO);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
+		
+        shaderRed->use();
+		glm::mat4 modelRed = glm::mat4(1.0f);
+		modelRed = glm::translate(modelRed, glm::vec3(-0.75f, 0.75f, 0.0f));
+		shaderRed->setMat4("model", modelRed);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glBindVertexArray(0);
 
-		// draw skybox as last
-		glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
-		skyboxShader->use();
-		view = glm::mat4(glm::mat3(camera.GetViewMatrix())); // remove translation from the view matrix
-		skyboxShader->setMat4("view", view);
-		setProjection(skyboxShader);
-
-		// skybox cube
-		glBindVertexArray(skyboxVAO);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
+		shaderBlue->use();
+		glm::mat4 modelBlue = glm::mat4(1.0f);
+		modelBlue = glm::translate(modelBlue, glm::vec3(0.75f, 0.75f, 0.0f));
+		shaderBlue->setMat4("model", modelBlue);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glBindVertexArray(0);
-		glDepthFunc(GL_LESS); // set depth function back to default
+
+		shaderGreen->use();
+		glm::mat4 modelGreen = glm::mat4(1.0f);
+		modelGreen = glm::translate(modelGreen, glm::vec3(-0.75f, -0.75f, 0.0f));
+		shaderGreen->setMat4("model", modelGreen);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		shaderYellow->use();
+		glm::mat4 modelYellow = glm::mat4(1.0f);
+		modelYellow = glm::translate(modelYellow, glm::vec3(0.75f, -0.75f, 0.0f));
+		shaderYellow->setMat4("model", modelYellow);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+
 
 		// Swap buffers and poll IO events
 		glfwSwapBuffers(window);
@@ -413,15 +322,6 @@ void mainLoop() {
 	}
 }
 
-// Ending process
-void cleanup() {
-    glDeleteVertexArrays(1, &cubeVAO);
-
-    if (shader) {
-        delete shader;
-        shader = nullptr;
-    }
-}
   
 // Running process 
 void processInput(GLFWwindow* window) {
