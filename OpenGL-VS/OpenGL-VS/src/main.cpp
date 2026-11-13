@@ -14,14 +14,14 @@
 #include <iostream>
 // Document adress
 //
-//  Last file update date : 2026-11-11 01:35
+//  Last file update date : 2026-11-13 20:00
 //
-//  <<theme>> : Advanced GLSL
+//  <<theme>> : Geometry Shader
 //  https://learnopengl.com/Advanced-OpenGL/  -Theme-
 // 
 /*  
-*   Done : Uniform Block and buffer ,  in Advanced GLSL, Uniform Buffer Object in Advanced GLSL,
-*   Todo : Read the examples and write the code,  in Advanced GLSL,
+*   Done : Read the examples and write the code,  in Advanced GLSL,
+*   Todo : Exploding object
 *
 *   Problems to be solved :-----------------------------------------------
 *
