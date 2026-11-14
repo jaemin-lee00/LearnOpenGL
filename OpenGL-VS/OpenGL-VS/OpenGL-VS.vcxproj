@@ -161,11 +161,11 @@
     <ClInclude Include="src\shaders\shader_s.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\shaders\advanced_glsl.vs" />
-    <None Include="src\shaders\blue.fs" />
-    <None Include="src\shaders\green.fs" />
-    <None Include="src\shaders\red.fs" />
-    <None Include="src\shaders\yellow.fs" />
+    <None Include="src\shaders\default.fs" />
+    <None Include="src\shaders\default.vs" />
+    <None Include="src\shaders\normal.fs" />
+    <None Include="src\shaders\normal.gs" />
+    <None Include="src\shaders\normal.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

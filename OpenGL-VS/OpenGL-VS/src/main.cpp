@@ -14,20 +14,19 @@
 #include <iostream>
 // Document adress
 //
-//  Last file update date : 2026-11-13 20:00
+//  Last file update date : 2026-11-15 23:25
 //
-//  <<theme>> : Geometry Shader
+//  <<theme>> : Instancing
 //  https://learnopengl.com/Advanced-OpenGL/  -Theme-
 // 
 /*  
-*   Done : Read the examples and write the code,  in Advanced GLSL,
-*   Todo : Exploding object
+*   Done : Geometry shader
+*   Todo : Instancing
 *
 *   Problems to be solved :-----------------------------------------------
 *
 *   
 */
-
 
 // Namespace for cleaner code
 using namespace std;
@@ -45,19 +44,12 @@ const unsigned int SCR_HEIGHT = 600;
 
 // Camera
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f)); // Initial camera position
-float lastX = SCR_WIDTH / 2.0f; // Last X position of the mouse
-float lastY = SCR_HEIGHT / 2.0f; // Last Y position of the mouse
+float lastX = (float) SCR_WIDTH / 2.0f; // Last X position of the mouse
+float lastY = (float) SCR_HEIGHT / 2.0f; // Last Y position of the mouse
 bool firstMouse = true; // Flag to check if it's the first mouse input
 
 float deltaTime = 0.0f; // Time between current frame and last framezz
 float lastFrame = 0.0f; // Time of last frame
-
-// Model matrix
-glm::mat4 model = glm::mat4(1.0f);
-// view matrix
-glm::mat4 view = glm::mat4(1.0f);
-// projection matrix
-glm::mat4 projection = glm::mat4(1.0f);
 
 // Global variables for OpenGL objects
 GLFWwindow* window = nullptr;
@@ -68,14 +60,18 @@ unsigned int cubeTexture;
 unsigned int cubeVAO, cubeVBO;
 unsigned int uboMatrices; // Uniform Buffer Object for matrices
 
-Shader* shaderRed = nullptr, *shaderGreen = nullptr, *shaderBlue = nullptr, *shaderYellow = nullptr;
+Shader* shader = nullptr;
+Shader* normalShader = nullptr;
+Model* backpack = nullptr;
 
-const char* vertexShaderPath = "src/shaders/advanced_glsl.vs";
+const char* vertexShaderPath = "src/shaders/default.vs";
+const char* fragmentShaderPath = "src/shaders/default.fs";
 
-const char* fragmentShaderRedPath = "src/shaders/red.fs";
-const char* fragmentShaderGreenPath = "src/shaders/green.fs";
-const char* fragmentShaderBluePath = "src/shaders/blue.fs";
-const char* fragmentShaderYellowPath = "src/shaders/yellow.fs";
+const char* normalVertexShaderPath = "src/shaders/normal.vs";
+const char* normalFragmentShaderPath = "src/shaders/normal.fs";
+const char* normalGeometryShaderPath = "src/shaders/normal.gs";
+
+const char* ModelPath = "resources/obj/backpack/backpack.obj";
 
 
 // Function declarations
@@ -159,16 +155,19 @@ bool init() {
 
 // Draw process
 bool draw() {
-    // Setup Shader
-    shaderRed = new Shader(vertexShaderPath, fragmentShaderRedPath);
-    shaderGreen = new Shader(vertexShaderPath, fragmentShaderGreenPath);
-    shaderBlue = new Shader(vertexShaderPath, fragmentShaderBluePath);
-    shaderYellow = new Shader(vertexShaderPath, fragmentShaderYellowPath);
 
-	// Setup Vertex Data
-	if (!loggingDecorator(setupVertexData, "setupVertexData")) {
-		return false;
-	}
+    // Setup Shader
+    shader = new Shader(vertexShaderPath, fragmentShaderPath);
+    normalShader = new Shader(normalVertexShaderPath, normalFragmentShaderPath, normalGeometryShaderPath);
+
+
+    stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
+    backpack = new Model(ModelPath);
+    
+	//// Setup Vertex Data
+	//if (!loggingDecorator(setupVertexData, "setupVertexData")) {
+	//	return false;
+	//}
 
 	// Setup Texture Data
 	//cubeTexture = loggingDecorator(loadTexture, "loadTexture", texturePath);
@@ -238,16 +237,6 @@ bool setupVertexData() {
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
-	unsigned int uniformBlockIndexRed = glGetUniformBlockIndex(shaderRed->ID, "Matrices");
-	unsigned int uniformBlockIndexGreen = glGetUniformBlockIndex(shaderGreen->ID, "Matrices");
-	unsigned int uniformBlockIndexBlue = glGetUniformBlockIndex(shaderBlue->ID, "Matrices");
-	unsigned int uniformBlockIndexYellow = glGetUniformBlockIndex(shaderYellow->ID, "Matrices");
-
-	glUniformBlockBinding(shaderRed->ID, uniformBlockIndexRed, 0);
-	glUniformBlockBinding(shaderGreen->ID, uniformBlockIndexGreen, 0);
-	glUniformBlockBinding(shaderBlue->ID, uniformBlockIndexBlue, 0);
-	glUniformBlockBinding(shaderYellow->ID, uniformBlockIndexYellow, 0);
-
 	glGenBuffers(1, &uboMatrices);
 	glBindBuffer(GL_UNIFORM_BUFFER, uboMatrices);
 	glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), NULL, GL_STATIC_DRAW);
@@ -283,38 +272,22 @@ void mainLoop() {
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 view = camera.GetViewMatrix();
-		glBindBuffer(GL_UNIFORM_BUFFER, uboMatrices);
-		glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(view));
-		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+		glm::mat4 modlel = glm::mat4(1.0f);
+		shader->use();
+		shader->setMat4("projection", projection);
+		shader->setMat4("view", view);
+		shader->setMat4("model", modlel);
 
-		glBindVertexArray(cubeVAO);
-		
-        shaderRed->use();
-		glm::mat4 modelRed = glm::mat4(1.0f);
-		modelRed = glm::translate(modelRed, glm::vec3(-0.75f, 0.75f, 0.0f));
-		shaderRed->setMat4("model", modelRed);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		backpack->Draw(*shader);
 
-		shaderBlue->use();
-		glm::mat4 modelBlue = glm::mat4(1.0f);
-		modelBlue = glm::translate(modelBlue, glm::vec3(0.75f, 0.75f, 0.0f));
-		shaderBlue->setMat4("model", modelBlue);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		normalShader->use();
+		normalShader->setMat4("projection", projection);
+		normalShader->setMat4("view", view);
+		normalShader->setMat4("model", modlel);
 
-		shaderGreen->use();
-		glm::mat4 modelGreen = glm::mat4(1.0f);
-		modelGreen = glm::translate(modelGreen, glm::vec3(-0.75f, -0.75f, 0.0f));
-		shaderGreen->setMat4("model", modelGreen);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
-		shaderYellow->use();
-		glm::mat4 modelYellow = glm::mat4(1.0f);
-		modelYellow = glm::translate(modelYellow, glm::vec3(0.75f, -0.75f, 0.0f));
-		shaderYellow->setMat4("model", modelYellow);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
-
+		backpack->Draw(*normalShader);
 
 		// Swap buffers and poll IO events
 		glfwSwapBuffers(window);

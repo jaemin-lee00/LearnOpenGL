@@ -32,19 +32,19 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\shaders\advanced_glsl.vs">
+    <None Include="src\shaders\default.vs">
       <Filter>shaders</Filter>
     </None>
-    <None Include="src\shaders\red.fs">
+    <None Include="src\shaders\default.fs">
       <Filter>shaders</Filter>
     </None>
-    <None Include="src\shaders\green.fs">
+    <None Include="src\shaders\normal.vs">
       <Filter>shaders</Filter>
     </None>
-    <None Include="src\shaders\blue.fs">
+    <None Include="src\shaders\normal.fs">
       <Filter>shaders</Filter>
     </None>
-    <None Include="src\shaders\yellow.fs">
+    <None Include="src\shaders\normal.gs">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>

@@ -32,7 +32,7 @@ public:
     string directory;
 	bool gammaCorrection;
 
-    Model(char* path, bool gamma = false) : gammaCorrection(gamma) {
+    Model(const std::string& path, bool gamma = false) : gammaCorrection(gamma) {
         // Load model from path
         loadModel(path);
     }
@@ -147,6 +147,7 @@ private:
                 Texture texture;
                 texture.id = TextureFromFile(str.C_Str(), this->directory);
                 texture.type = typeName;
+				texture.path = str.C_Str();
                 textures.push_back(texture);
                 textures_load.push_back(texture);
             }
