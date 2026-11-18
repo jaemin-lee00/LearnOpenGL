@@ -161,11 +161,10 @@
     <ClInclude Include="src\shaders\shader_s.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\shaders\default.fs" />
-    <None Include="src\shaders\default.vs" />
-    <None Include="src\shaders\normal.fs" />
-    <None Include="src\shaders\normal.gs" />
-    <None Include="src\shaders\normal.vs" />
+    <None Include="src\shaders\asteriods.fs" />
+    <None Include="src\shaders\asteroids.vs" />
+    <None Include="src\shaders\planet.fs" />
+    <None Include="src\shaders\planet.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

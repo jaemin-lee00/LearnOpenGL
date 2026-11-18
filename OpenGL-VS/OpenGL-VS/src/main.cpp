@@ -14,14 +14,14 @@
 #include <iostream>
 // Document adress
 //
-//  Last file update date : 2026-11-15 23:25
+//  Last file update date : 2026-11-18 09:55
 //
-//  <<theme>> : Instancing
+//  <<theme>> : Anti Aliasing
 //  https://learnopengl.com/Advanced-OpenGL/  -Theme-
 // 
 /*  
-*   Done : Geometry shader
-*   Todo : Instancing
+*   Done : Instancing
+*   Todo : Anti-Aliasing
 *
 *   Problems to be solved :-----------------------------------------------
 *
@@ -43,7 +43,7 @@ const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 // Camera
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f)); // Initial camera position
+Camera camera(glm::vec3(0.0f, 0.0f, 155.0f)); // Initial camera position
 float lastX = (float) SCR_WIDTH / 2.0f; // Last X position of the mouse
 float lastY = (float) SCR_HEIGHT / 2.0f; // Last Y position of the mouse
 bool firstMouse = true; // Flag to check if it's the first mouse input
@@ -54,30 +54,25 @@ float lastFrame = 0.0f; // Time of last frame
 // Global variables for OpenGL objects
 GLFWwindow* window = nullptr;
 
-//In this case, we use this variable to store the shader program ID, which is used to reference the compiled shader program in OpenGL.
-// sotres how much we're seeing of either texture (naming Teuxter ID) refectoring should be done frequently depending on the situation
-unsigned int cubeTexture;
-unsigned int cubeVAO, cubeVBO;
-unsigned int uboMatrices; // Uniform Buffer Object for matrices
 
-Shader* shader = nullptr;
-Shader* normalShader = nullptr;
-Model* backpack = nullptr;
+Shader* asteriodShader = nullptr;
+Shader* planetShader = nullptr;
 
-const char* vertexShaderPath = "src/shaders/default.vs";
-const char* fragmentShaderPath = "src/shaders/default.fs";
+Model* rock = nullptr;
+Model* planet = nullptr;
 
-const char* normalVertexShaderPath = "src/shaders/normal.vs";
-const char* normalFragmentShaderPath = "src/shaders/normal.fs";
-const char* normalGeometryShaderPath = "src/shaders/normal.gs";
+const char* vertexShaderPath = "src/shaders/asteroids.vs";
+const char* fragmentShaderPath = "src/shaders/asteriods.fs";
 
-const char* ModelPath = "resources/obj/backpack/backpack.obj";
+const char* planetVertexShaderPath = "src/shaders/planet.vs";
+const char* planetFragmentShaderPath = "src/shaders/planet.fs";
 
+const char* rockModelPath = "resources/obj/rock/rock.obj";
+const char* planetModelPath = "resources/obj/planet/planet.obj";
 
 // Function declarations
 bool init();
 bool draw();
-bool setupVertexData();
 void mainLoop();
 
 // Decorator function for error handling
@@ -157,13 +152,22 @@ bool init() {
 bool draw() {
 
     // Setup Shader
-    shader = new Shader(vertexShaderPath, fragmentShaderPath);
-    normalShader = new Shader(normalVertexShaderPath, normalFragmentShaderPath, normalGeometryShaderPath);
+	asteriodShader = loggingDecorator([]() {
+		return new Shader(vertexShaderPath, fragmentShaderPath);
+		}, "asteriodShader");
+	planetShader = loggingDecorator([]() { 
+        return new Shader(planetVertexShaderPath, planetFragmentShaderPath);
+		}, "planetShader");
+
+	rock = loggingDecorator([]() {
+		return new Model(rockModelPath);
+		}, "rock");
+
+	planet = loggingDecorator([]() {
+		return new Model(planetModelPath);
+		}, "planet");
 
 
-    stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
-    backpack = new Model(ModelPath);
-    
 	//// Setup Vertex Data
 	//if (!loggingDecorator(setupVertexData, "setupVertexData")) {
 	//	return false;
@@ -179,86 +183,63 @@ bool draw() {
 	return true;
 }
 
-bool setupVertexData() {
-    // set up vertex data (and buffer(s)) and configure vertex attributes
-    // ------------------------------------------------------------------
-    float cubeVertices[] = {
-        // positions         
-        -0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
-        -0.5f,  0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f,
-
-        -0.5f, -0.5f,  0.5f,
-         0.5f, -0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f,  0.5f,
-        -0.5f, -0.5f,  0.5f,
-
-        -0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f,
-        -0.5f, -0.5f,  0.5f,
-        -0.5f,  0.5f,  0.5f,
-
-         0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-
-        -0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f,  0.5f,
-         0.5f, -0.5f,  0.5f,
-        -0.5f, -0.5f,  0.5f,
-        -0.5f, -0.5f, -0.5f,
-
-        -0.5f,  0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
-         0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f, -0.5f,
-    };
-
-	glGenVertexArrays(1, &cubeVAO);
-	glGenBuffers(1, &cubeVBO);
-
-    // cube VAO
-    glBindVertexArray(cubeVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-
-	glGenBuffers(1, &uboMatrices);
-	glBindBuffer(GL_UNIFORM_BUFFER, uboMatrices);
-	glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), NULL, GL_STATIC_DRAW);
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-	glBindBufferRange(GL_UNIFORM_BUFFER, 0, uboMatrices, 0, 2 * sizeof(glm::mat4));
-
-	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-	glBindBuffer(GL_UNIFORM_BUFFER, uboMatrices);
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(projection));
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-
-    // Unbind VBO and VAO
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-
-    return true;
-}
-
 void mainLoop() {
     
+	unsigned int amount = 100000;
+	glm::mat4* modelMatrices = new glm::mat4[amount];
+	srand(static_cast<unsigned int>(glfwGetTime())); // initialize random seed
+	float radius = 150.0;
+	float offset = 25.0f;
+
+	for (unsigned int i = 0; i < amount; i++) {
+		glm::mat4 model = glm::mat4(1.0f);
+		// 1. Translation: displace along circle with 'radius' in range [-offset, offset]
+		float angle = (float)i / (float)amount * 360.0f;
+		float displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
+		float x = sin(angle) * radius + displacement;
+		displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
+		float y = displacement * 0.4f; // keep height of field smaller compared to width of x and z
+		displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
+		float z = cos(angle) * radius + displacement;
+		model = glm::translate(model, glm::vec3(x, y, z));
+		// 2. Scale: scale between 0.05 and 0.25f
+		float scale = static_cast<float>((rand() % 20) / 100.0 + 0.05);
+		model = glm::scale(model, glm::vec3(scale));
+		// 3. Rotation: add random rotation around a (semi)randomly picked rotation axis vector
+		float rotAngle = static_cast<float>(rand() % 360);
+		model = glm::rotate(model, rotAngle, glm::vec3(0.4f, 0.6f, 0.8f));
+		// Add to list of matrices
+		modelMatrices[i] = model;
+	}
+
+	unsigned int buffer;
+	glGenBuffers(1, &buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+	glBufferData(GL_ARRAY_BUFFER, amount * sizeof(glm::mat4), &modelMatrices[0], GL_STATIC_DRAW);
+
+	for (unsigned int i = 0; i < rock->meshes.size(); i++) {
+		
+		unsigned int VAO = rock->meshes[i].VAO;
+		glBindVertexArray(VAO);
+
+		glEnableVertexAttribArray(3);
+		glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)0);
+		glEnableVertexAttribArray(4);
+		glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4)));
+		glEnableVertexAttribArray(5);
+		glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(2 * sizeof(glm::vec4)));
+		glEnableVertexAttribArray(6);
+		glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(3 * sizeof(glm::vec4)));
+
+		glVertexAttribDivisor(3, 1);
+		glVertexAttribDivisor(4, 1);
+		glVertexAttribDivisor(5, 1);
+		glVertexAttribDivisor(6, 1);
+
+		glBindVertexArray(0);
+	}
+
+
 	while (!glfwWindowShouldClose(window)) {
 
 		// per-frame time logic
@@ -272,22 +253,31 @@ void mainLoop() {
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+		glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
 		glm::mat4 view = camera.GetViewMatrix();
-		glm::mat4 modlel = glm::mat4(1.0f);
-		shader->use();
-		shader->setMat4("projection", projection);
-		shader->setMat4("view", view);
-		shader->setMat4("model", modlel);
+		asteriodShader->use();
+		asteriodShader->setMat4("projection", projection);
+		asteriodShader->setMat4("view", view);
+		
+		planetShader->use();
+		planetShader->setMat4("projection", projection);
+		planetShader->setMat4("view", view);
 
-		backpack->Draw(*shader);
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, -3.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(4.0f, 4.0f, 4.0f));
+		planetShader->setMat4("model", model);
+		planet->Draw(*planetShader);
 
-		normalShader->use();
-		normalShader->setMat4("projection", projection);
-		normalShader->setMat4("view", view);
-		normalShader->setMat4("model", modlel);
-
-		backpack->Draw(*normalShader);
+		asteriodShader->use();
+		asteriodShader->setInt("texture_diffuse1", 0);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, rock->meshes[0].textures[0].id);
+		for (unsigned int i = 0; i < rock->meshes.size(); i++) {
+			glBindVertexArray(rock->meshes[i].VAO);
+			glDrawElementsInstanced(GL_TRIANGLES, static_cast<unsigned int>(rock->meshes[i].indices.size()), GL_UNSIGNED_INT, 0, amount);
+			glBindVertexArray(0);
+		}
 
 		// Swap buffers and poll IO events
 		glfwSwapBuffers(window);

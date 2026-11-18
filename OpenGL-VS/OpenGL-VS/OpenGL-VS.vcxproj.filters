@@ -32,19 +32,16 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\shaders\default.vs">
+    <None Include="src\shaders\asteroids.vs">
       <Filter>shaders</Filter>
     </None>
-    <None Include="src\shaders\default.fs">
+    <None Include="src\shaders\asteriods.fs">
       <Filter>shaders</Filter>
     </None>
-    <None Include="src\shaders\normal.vs">
+    <None Include="src\shaders\planet.vs">
       <Filter>shaders</Filter>
     </None>
-    <None Include="src\shaders\normal.fs">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="src\shaders\normal.gs">
+    <None Include="src\shaders\planet.fs">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>
