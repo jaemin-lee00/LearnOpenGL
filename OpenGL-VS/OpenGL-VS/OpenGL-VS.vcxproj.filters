@@ -32,16 +32,16 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\shaders\asteroids.vs">
+    <None Include="src\shaders\anti_aliasing.vs">
       <Filter>shaders</Filter>
     </None>
-    <None Include="src\shaders\asteriods.fs">
+    <None Include="src\shaders\anti_aliasing.fs">
       <Filter>shaders</Filter>
     </None>
-    <None Include="src\shaders\planet.vs">
+    <None Include="src\shaders\aa_post.vs">
       <Filter>shaders</Filter>
     </None>
-    <None Include="src\shaders\planet.fs">
+    <None Include="src\shaders\aa_post.fs">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>

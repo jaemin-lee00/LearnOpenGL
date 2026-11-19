@@ -14,14 +14,14 @@
 #include <iostream>
 // Document adress
 //
-//  Last file update date : 2026-11-18 09:55
+//  Last file update date : 2026-11-19 09:55
 //
-//  <<theme>> : Anti Aliasing
-//  https://learnopengl.com/Advanced-OpenGL/  -Theme-
+//  <<theme>> : Advanced Lighting
+//  https://learnopengl.com/Advanced-Lighting/  -Theme-
 // 
 /*  
-*   Done : Instancing
-*   Todo : Anti-Aliasing
+*   Done : Advanced Lighting
+*   Todo : 
 *
 *   Problems to be solved :-----------------------------------------------
 *
@@ -43,7 +43,7 @@ const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 // Camera
-Camera camera(glm::vec3(0.0f, 0.0f, 155.0f)); // Initial camera position
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f)); // Initial camera position
 float lastX = (float) SCR_WIDTH / 2.0f; // Last X position of the mouse
 float lastY = (float) SCR_HEIGHT / 2.0f; // Last Y position of the mouse
 bool firstMouse = true; // Flag to check if it's the first mouse input
@@ -54,25 +54,8 @@ float lastFrame = 0.0f; // Time of last frame
 // Global variables for OpenGL objects
 GLFWwindow* window = nullptr;
 
-
-Shader* asteriodShader = nullptr;
-Shader* planetShader = nullptr;
-
-Model* rock = nullptr;
-Model* planet = nullptr;
-
-const char* vertexShaderPath = "src/shaders/asteroids.vs";
-const char* fragmentShaderPath = "src/shaders/asteriods.fs";
-
-const char* planetVertexShaderPath = "src/shaders/planet.vs";
-const char* planetFragmentShaderPath = "src/shaders/planet.fs";
-
-const char* rockModelPath = "resources/obj/rock/rock.obj";
-const char* planetModelPath = "resources/obj/planet/planet.obj";
-
 // Function declarations
 bool init();
-bool draw();
 void mainLoop();
 
 // Decorator function for error handling
@@ -95,11 +78,6 @@ int main() {
         return -1;
     }
 
-    // Drawing Setup
-    if (!loggingDecorator(draw, "draw")) {
-        return -1;
-    }
-
     // Main Render Loop
     mainLoop();
 
@@ -108,7 +86,6 @@ int main() {
     return 0;
 }
 
-// Init process
 bool init() {
 
     // glfw : initialize and configure
@@ -148,97 +125,127 @@ bool init() {
     return true;
 }
 
-// Draw process
-bool draw() {
-
-    // Setup Shader
-	asteriodShader = loggingDecorator([]() {
-		return new Shader(vertexShaderPath, fragmentShaderPath);
-		}, "asteriodShader");
-	planetShader = loggingDecorator([]() { 
-        return new Shader(planetVertexShaderPath, planetFragmentShaderPath);
-		}, "planetShader");
-
-	rock = loggingDecorator([]() {
-		return new Model(rockModelPath);
-		}, "rock");
-
-	planet = loggingDecorator([]() {
-		return new Model(planetModelPath);
-		}, "planet");
-
-
-	//// Setup Vertex Data
-	//if (!loggingDecorator(setupVertexData, "setupVertexData")) {
-	//	return false;
-	//}
-
-	// Setup Texture Data
-	//cubeTexture = loggingDecorator(loadTexture, "loadTexture", texturePath);
-	//if (!cubeTexture) {
-	//	return false;
-	//}
-
-
-	return true;
-}
-
 void mainLoop() {
     
-	unsigned int amount = 100000;
-	glm::mat4* modelMatrices = new glm::mat4[amount];
-	srand(static_cast<unsigned int>(glfwGetTime())); // initialize random seed
-	float radius = 150.0;
-	float offset = 25.0f;
+	Shader shader("src/shaders/anti_aliasing.vs", "src/shaders/anti_aliasing.fs");
+	Shader screenShader("src/shaders/aa_post.vs", "src/shaders/aa_post.fs");
+    
+	float cubeVertices[] = {
+        // positions       
+        -0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f, -0.5f,
+         0.5f,  0.5f, -0.5f,
+         0.5f,  0.5f, -0.5f,
+        -0.5f,  0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,
 
-	for (unsigned int i = 0; i < amount; i++) {
-		glm::mat4 model = glm::mat4(1.0f);
-		// 1. Translation: displace along circle with 'radius' in range [-offset, offset]
-		float angle = (float)i / (float)amount * 360.0f;
-		float displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
-		float x = sin(angle) * radius + displacement;
-		displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
-		float y = displacement * 0.4f; // keep height of field smaller compared to width of x and z
-		displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
-		float z = cos(angle) * radius + displacement;
-		model = glm::translate(model, glm::vec3(x, y, z));
-		// 2. Scale: scale between 0.05 and 0.25f
-		float scale = static_cast<float>((rand() % 20) / 100.0 + 0.05);
-		model = glm::scale(model, glm::vec3(scale));
-		// 3. Rotation: add random rotation around a (semi)randomly picked rotation axis vector
-		float rotAngle = static_cast<float>(rand() % 360);
-		model = glm::rotate(model, rotAngle, glm::vec3(0.4f, 0.6f, 0.8f));
-		// Add to list of matrices
-		modelMatrices[i] = model;
-	}
+        -0.5f, -0.5f,  0.5f,
+         0.5f, -0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
+        -0.5f, -0.5f,  0.5f,
 
-	unsigned int buffer;
-	glGenBuffers(1, &buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	glBufferData(GL_ARRAY_BUFFER, amount * sizeof(glm::mat4), &modelMatrices[0], GL_STATIC_DRAW);
+        -0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
 
-	for (unsigned int i = 0; i < rock->meshes.size(); i++) {
-		
-		unsigned int VAO = rock->meshes[i].VAO;
-		glBindVertexArray(VAO);
+         0.5f,  0.5f,  0.5f,
+         0.5f,  0.5f, -0.5f,
+         0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
 
-		glEnableVertexAttribArray(3);
-		glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)0);
-		glEnableVertexAttribArray(4);
-		glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4)));
-		glEnableVertexAttribArray(5);
-		glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(2 * sizeof(glm::vec4)));
-		glEnableVertexAttribArray(6);
-		glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(3 * sizeof(glm::vec4)));
+        -0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f,  0.5f,
+         0.5f, -0.5f,  0.5f,
+        -0.5f, -0.5f,  0.5f,
+        -0.5f, -0.5f, -0.5f,
 
-		glVertexAttribDivisor(3, 1);
-		glVertexAttribDivisor(4, 1);
-		glVertexAttribDivisor(5, 1);
-		glVertexAttribDivisor(6, 1);
+        -0.5f,  0.5f, -0.5f,
+         0.5f,  0.5f, -0.5f,
+         0.5f,  0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f, -0.5f
+    };
 
-		glBindVertexArray(0);
-	}
+	float quadVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
+		// positions   // texCoords
+		-1.0f,  1.0f,  0.0f, 1.0f,
+		-1.0f, -1.0f,  0.0f, 0.0f,
+		 1.0f, -1.0f,  1.0f, 0.0f,
+		-1.0f,  1.0f,  0.0f, 1.0f,
+		 1.0f, -1.0f,  1.0f, 0.0f,
+		 1.0f,  1.0f,  1.0f, 1.0f
+	};
 
+	unsigned int cubeVAO, cubeVBO;
+	glGenVertexArrays(1, &cubeVAO);
+	glGenBuffers(1, &cubeVBO);
+	glBindVertexArray(cubeVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+	unsigned int quadVAO, quadVBO;
+	glGenVertexArrays(1, &quadVAO);
+	glGenBuffers(1, &quadVBO);
+	glBindVertexArray(quadVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
+	unsigned int framebuffer;
+	glGenFramebuffers(1, &framebuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+	unsigned int textureColorbufferMultisampled;
+	glGenTextures(1, &textureColorbufferMultisampled);
+	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, textureColorbufferMultisampled);
+	glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGB, SCR_WIDTH, SCR_HEIGHT, GL_TRUE);
+	glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, textureColorbufferMultisampled, 0);
+
+	unsigned int rbo;
+	glGenRenderbuffers(1, &rbo);
+	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+	glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		cout << "[Err] > msg : Framebuffer is not complete!" << endl;
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	unsigned int intermediateFBO;
+	glGenFramebuffers(1, &intermediateFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, intermediateFBO);
+
+	unsigned int screenTexture;
+	glGenTextures(1, &screenTexture);
+	glBindTexture(GL_TEXTURE_2D, screenTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, screenTexture, 0);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		cout << "[Err] > msg : Intermediate framebuffer is not complete!" << endl;
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	screenShader.use();
+	screenShader.setInt("screenTexture", 0);
 
 	while (!glfwWindowShouldClose(window)) {
 
@@ -253,31 +260,34 @@ void mainLoop() {
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
-		glm::mat4 view = camera.GetViewMatrix();
-		asteriodShader->use();
-		asteriodShader->setMat4("projection", projection);
-		asteriodShader->setMat4("view", view);
-		
-		planetShader->use();
-		planetShader->setMat4("projection", projection);
-		planetShader->setMat4("view", view);
+		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glEnable(GL_DEPTH_TEST);
 
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, -3.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(4.0f, 4.0f, 4.0f));
-		planetShader->setMat4("model", model);
-		planet->Draw(*planetShader);
+		shader.use();
+		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
+		shader.setMat4("projection", projection);
+		shader.setMat4("view", camera.GetViewMatrix());
+		shader.setMat4("model", glm::mat4(1.0f));
 
-		asteriodShader->use();
-		asteriodShader->setInt("texture_diffuse1", 0);
+		glBindVertexArray(cubeVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, intermediateFBO);
+		glBlitFramebuffer(0, 0, SCR_WIDTH, SCR_HEIGHT, 0, 0, SCR_WIDTH, SCR_HEIGHT, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+		glDisable(GL_DEPTH_TEST);
+
+		screenShader.use();
+		glBindVertexArray(quadVAO);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, rock->meshes[0].textures[0].id);
-		for (unsigned int i = 0; i < rock->meshes.size(); i++) {
-			glBindVertexArray(rock->meshes[i].VAO);
-			glDrawElementsInstanced(GL_TRIANGLES, static_cast<unsigned int>(rock->meshes[i].indices.size()), GL_UNSIGNED_INT, 0, amount);
-			glBindVertexArray(0);
-		}
+		glBindTexture(GL_TEXTURE_2D, screenTexture);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		// Swap buffers and poll IO events
 		glfwSwapBuffers(window);
