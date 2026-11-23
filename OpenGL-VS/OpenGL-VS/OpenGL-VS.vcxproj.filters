@@ -32,16 +32,10 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\shaders\anti_aliasing.vs">
+    <None Include="src\shaders\advanced_lighting.vs">
       <Filter>shaders</Filter>
     </None>
-    <None Include="src\shaders\anti_aliasing.fs">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="src\shaders\aa_post.vs">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="src\shaders\aa_post.fs">
+    <None Include="src\shaders\advanced_lighting.fs">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>

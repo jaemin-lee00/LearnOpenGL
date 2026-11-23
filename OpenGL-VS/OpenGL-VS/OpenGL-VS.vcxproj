@@ -161,10 +161,8 @@
     <ClInclude Include="src\shaders\shader_s.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\shaders\aa_post.fs" />
-    <None Include="src\shaders\aa_post.vs" />
-    <None Include="src\shaders\anti_aliasing.fs" />
-    <None Include="src\shaders\anti_aliasing.vs" />
+    <None Include="src\shaders\advanced_lighting.fs" />
+    <None Include="src\shaders\advanced_lighting.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
