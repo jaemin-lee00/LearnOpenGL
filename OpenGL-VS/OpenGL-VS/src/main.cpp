@@ -14,14 +14,14 @@
 #include <iostream>
 // Document adress
 //
-//  Last file update date : 2026-11-26 05:05
+//  Last file update date : 2026-11-27 05:45
 //
 //  <<theme>> : Shadows
 //  https://learnopengl.com/Advanced-Lighting/  -Theme-
 // 
 /*  
-*   Done : Gamma Correction
-*   Todo : Shadows/Shadow-Mapping
+*   Done : Shadow mapping
+*   Todo : The depth map
 *
 *   Problems to be solved :-----------------------------------------------
 *
