@@ -14,14 +14,14 @@
 #include <iostream>
 // Document adress
 //
-//  Last file update date : 2026-11-27 05:45
+//  Last file update date : 2026-11-28 23:15
 //
 //  <<theme>> : Shadows
 //  https://learnopengl.com/Advanced-Lighting/  -Theme-
 // 
 /*  
-*   Done : Shadow mapping
-*   Todo : The depth map
+*   Done : The depth map
+*   Todo : Rendering shadows
 *
 *   Problems to be solved :-----------------------------------------------
 *
